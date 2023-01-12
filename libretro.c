@@ -4,8 +4,10 @@
 #include <stdarg.h>
 #include <string.h>
 #include <math.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <unistd.h>
 
-#include <stdio.h>
 #if defined(_WIN32) && !defined(_XBOX)
    #include <windows.h>
 #endif
@@ -24,6 +26,39 @@ static float last_sample_rate;
 char retro_base_directory[4096];
 char retro_game_path[4096];
 
+enum FileType {
+   FileTypeInvalid,
+   FileTypeDir,
+   FileTypeWasm,
+   FileTypeZip
+};
+
+// detect rom-type
+enum FileType get_rom_type (const char *d) {
+   DIR *dirptr;
+   if (access ( d, F_OK ) != -1 ) {
+      if ((dirptr = opendir (d)) != NULL) {
+         // d exists and is a directory
+         closedir (dirptr);
+         return FileTypeDir;
+      } else {
+         // d exists but is not a directory, detect zip
+         unsigned char bytes[4];
+         FILE* fp=fopen(d, "r");
+         fread(&bytes, 4, 1, fp);
+         fclose(fp);
+         if (bytes[0] == 0x50 && bytes[1] == 0x4b && bytes[2] == 0x03 && bytes[3] == 0x04) {
+            return FileTypeZip;
+         } else {
+            return FileTypeWasm;
+         }
+      }
+   } else {
+      // d does not exist
+      return FileTypeInvalid;
+   }
+}
+
 static void fallback_log(enum retro_log_level level, const char *fmt, ...) {
    (void)level;
    va_list va;
@@ -37,8 +72,7 @@ static retro_environment_t environ_cb;
 void retro_init(void) {
    frame_buf = (uint8_t*)malloc(VIDEO_PIXELS * sizeof(uint32_t));
    const char *dir = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir)
-   {
+   if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir) {
       snprintf(retro_base_directory, sizeof(retro_base_directory), "%s", dir);
    }
 }
@@ -52,9 +86,7 @@ unsigned retro_api_version(void) {
    return RETRO_API_VERSION;
 }
 
-void retro_set_controller_port_device(unsigned port, unsigned device) {
-   log_cb(RETRO_LOG_INFO, "Plugging device %u into port %u.\n", device, port);
-}
+void retro_set_controller_port_device(unsigned port, unsigned device) {}
 
 void retro_get_system_info(struct retro_system_info *info) {
    memset(info, 0, sizeof(*info));
@@ -73,7 +105,6 @@ static retro_input_state_t input_state_cb;
 void retro_get_system_av_info(struct retro_system_av_info *info) {
    float aspect                = 0.0f;
    float sampling_rate         = 30000.0f;
-
 
    info->geometry.base_width   = VIDEO_WIDTH;
    info->geometry.base_height  = VIDEO_HEIGHT;
@@ -134,8 +165,7 @@ static void update_input(void) {}
 static void check_variables(void) {}
 
 static void audio_callback(void) {
-   for (unsigned i = 0; i < 30000 / 60; i++, phase++)
-   {
+   for (unsigned i = 0; i < 30000 / 60; i++, phase++) {
       int16_t val = 0x800 * sinf(2.0f * M_PI * phase * 300.0f / 30000.0f);
       audio_cb(val, val);
    }
@@ -168,8 +198,7 @@ bool retro_load_game(const struct retro_game_info *info) {
    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
-   if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
-   {
+   if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt)) {
       log_cb(RETRO_LOG_INFO, "XRGB8888 is not supported.\n");
       return false;
    }
@@ -179,9 +208,13 @@ bool retro_load_game(const struct retro_game_info *info) {
    use_audio_cb = environ_cb(RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK, &audio_cb);
 
    check_variables();
+   
+   enum FileType romType = get_rom_type(info->path);
+   if (romType == FileTypeInvalid) {
+      return false;
+   } else if (romType == FileTypeWasm) {
 
-   fallback_log(RETRO_LOG_INFO, "LOAD %s\n", info->path);
-   // Check if path is a dir/zip/wasm
+   }
 
    (void)info;
    return true;
