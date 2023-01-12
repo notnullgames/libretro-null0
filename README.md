@@ -10,5 +10,5 @@ cmake -B build .
 make -C build
 
 # run on mac
-/Applications/RetroArch.app/Contents/MacOS/RetroArch -L build/null0_libretro.dylib test.null0
+/Applications/RetroArch.app/Contents/MacOS/RetroArch -L build/null0_libretro.dylib game.null0
 ```

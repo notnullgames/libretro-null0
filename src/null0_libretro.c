@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <unistd.h>
+#include "null0.h"
 
 #if defined(_WIN32) && !defined(_XBOX)
    #include <windows.h>
@@ -25,39 +26,6 @@ static float last_aspect;
 static float last_sample_rate;
 char retro_base_directory[4096];
 char retro_game_path[4096];
-
-enum FileType {
-   FileTypeInvalid,
-   FileTypeDir,
-   FileTypeWasm,
-   FileTypeZip
-};
-
-// detect rom-type
-enum FileType get_rom_type (const char *d) {
-   DIR *dirptr;
-   if (access ( d, F_OK ) != -1 ) {
-      if ((dirptr = opendir (d)) != NULL) {
-         // d exists and is a directory
-         closedir (dirptr);
-         return FileTypeDir;
-      } else {
-         // d exists but is not a directory, detect zip
-         unsigned char bytes[4];
-         FILE* fp=fopen(d, "r");
-         fread(&bytes, 4, 1, fp);
-         fclose(fp);
-         if (bytes[0] == 0x50 && bytes[1] == 0x4b && bytes[2] == 0x03 && bytes[3] == 0x04) {
-            return FileTypeZip;
-         } else {
-            return FileTypeWasm;
-         }
-      }
-   } else {
-      // d does not exist
-      return FileTypeInvalid;
-   }
-}
 
 static void fallback_log(enum retro_log_level level, const char *fmt, ...) {
    (void)level;
@@ -104,7 +72,7 @@ static retro_input_state_t input_state_cb;
 
 void retro_get_system_av_info(struct retro_system_av_info *info) {
    float aspect                = 0.0f;
-   float sampling_rate         = 30000.0f;
+   float sampling_rate         = 44100.0f;
 
    info->geometry.base_width   = VIDEO_WIDTH;
    info->geometry.base_height  = VIDEO_HEIGHT;
@@ -208,16 +176,9 @@ bool retro_load_game(const struct retro_game_info *info) {
    use_audio_cb = environ_cb(RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK, &audio_cb);
 
    check_variables();
-   
-   enum FileType romType = get_rom_type(info->path);
-   if (romType == FileTypeInvalid) {
-      return false;
-   } else if (romType == FileTypeWasm) {
-
-   }
 
    (void)info;
-   return true;
+   return null0_mount(retro_game_path);
 }
 
 void retro_unload_game(void) {}
