@@ -2,6 +2,19 @@
 #include "m3_env.h"
 #include "physfs.h"
 #include <libgen.h>
+#include <curl/curl.h>
+
+enum FileType {
+   FileTypeInvalid,
+   FileTypeDir,
+   FileTypeWasm,
+   FileTypeZip
+};
+
+struct MemoryStruct {
+  char *memory;
+  size_t size;
+};
 
 static M3Environment* env;
 static M3Runtime* runtime;
@@ -41,13 +54,6 @@ int FileSizeFromPhysFS(const char* fileName) {
   }
 }
 
-enum FileType {
-   FileTypeInvalid,
-   FileTypeDir,
-   FileTypeWasm,
-   FileTypeZip
-};
-
 void strreplace(char *string, const char *find, const char *replaceWith){
   if(strstr(string, find) != NULL){
     char *temporaryString = malloc(strlen(strstr(string, find) + strlen(find)) + 1);
@@ -58,6 +64,39 @@ void strreplace(char *string, const char *find, const char *replaceWith){
     free(temporaryString);    //Free the memory to avoid memory leaks
   }
 }
+
+size_t nullo_http_cb_write(void *contents, size_t size, size_t nmemb, void *userp) {
+  size_t realsize = size * nmemb;
+  struct MemoryStruct *mem = (struct MemoryStruct *)userp;
+ 
+  char *ptr = realloc(mem->memory, mem->size + realsize + 1);
+  if(!ptr) {
+    /* out of memory! */
+    printf("not enough memory (realloc returned NULL)\n");
+    return 0;
+  }
+ 
+  mem->memory = ptr;
+  memcpy(&(mem->memory[mem->size]), contents, realsize);
+  mem->size += realsize;
+  mem->memory[mem->size] = 0;
+ 
+  return realsize;
+}
+
+char* nullo_http_get(const char* url) {
+  char* out;
+  CURL *curl = curl_easy_init();
+  if (curl) {
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, nullo_http_cb_write);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &out);
+    CURLcode res = curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
+  }
+  return out;
+}
+
 
 // detect rom-type
 enum FileType null0_rom_type (const char *d) {
