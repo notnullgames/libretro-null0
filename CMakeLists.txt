@@ -3,6 +3,14 @@ PROJECT(null0_libretro)
 set(CMAKE_C_STANDARD 99)
 include(FetchContent)
 
+# WARNING: comment these for normal libretro core.
+
+# this will allow the rom to hit network resources
+add_definitions(-DNULL0_HTTP)
+
+# allow main.wasm to write to itself (in overlay FS, not the zip) for self-updating
+# add_definitions(-DNULL0_SELFWRITE)
+
 # Add wasm3 for wasm loading
 FetchContent_Declare(m3 GIT_REPOSITORY https://github.com/wasm3/wasm3.git GIT_TAG main)
 FetchContent_MakeAvailable(m3)
