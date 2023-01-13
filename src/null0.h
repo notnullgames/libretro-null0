@@ -71,7 +71,7 @@ static size_t nullo_http_callback(void *contents, size_t size, size_t nmemb, voi
 
   mem->memory = realloc(mem->memory, mem->size + realsize + 1);
   if(mem->memory == NULL) {
-    printf("not enough memory (realloc returned NULL)\n");
+    fprintf(stderr, "not enough memory (realloc returned NULL)\n");
     return 0;
   }
 
@@ -113,7 +113,7 @@ static void null0_check_wasm3 (M3Result result) {
   if (result) {
     M3ErrorInfo info;
     m3_GetErrorInfo(runtime, &info);
-    printf("%s - %s", result, info.message);
+    fprintf(stderr, "%s - %s", result, info.message);
   }
 }
 
@@ -122,7 +122,7 @@ static void null0_check_wasm3_is_ok () {
   M3ErrorInfo error;
   m3_GetErrorInfo(runtime, &error);
   if (error.result) {
-    printf("%s - %s\n", error.result, error.message);
+    fprintf(stderr, "%s - %s\n", error.result, error.message);
   }
 }
 
@@ -132,10 +132,7 @@ static m3ApiRawFunction (null0_abort) {
   m3ApiGetArgMem(const char*, fileName);
   m3ApiGetArg(uint16_t, lineNumber);
   m3ApiGetArg(uint16_t, columnNumber);
-
-  char* msg;
-  printf(msg, "%s at %s:%d:%d\n", message, fileName, lineNumber, columnNumber);
-
+  fprintf(stderr, "%s at %s:%d:%d\n", message, fileName, lineNumber, columnNumber);
   m3ApiSuccess();
 }
 
@@ -171,7 +168,7 @@ static m3ApiRawFunction (null0_http_request_get) {
     free(chunk.memory);
     curl_global_cleanup();
   #else
-    printf("Attempting to GET %s but HTTP is disabled.\n", url);
+    fprintf(stderr, "Attempting to GET %s but HTTP is disabled.\n", url);
   #endif
 
   m3ApiReturn(chunk.memory);
@@ -207,7 +204,7 @@ void null0_load_cart_wasm (u8* wasmBuffer, int byteLength) {
   if (cart_init) {
     null0_check_wasm3(m3_CallV(cart_init));
   } else {
-    printf("error in init() in cart.\n");
+    fprintf(stderr, "error in init() in cart.\n");
   }
 }
 
@@ -237,13 +234,13 @@ bool null0_mount(char* retro_game_path) {
     wasmFile = fopen(retro_game_path, "rb");
 
     // TODO: read file in to wasmBuffer/wasmLen
-    printf("direct wasm-loading not implemented yet.\n");
+    fprintf(stderr, "direct wasm-loading not implemented yet.\n");
     return false;
 
     fclose(wasmFile);
   } else {
     if (!FileExistsInPhysFS("main.wasm")) {
-      printf("no main.wasm\n");
+      fprintf(stderr, "no main.wasm\n");
       return false;
     }
 
@@ -252,7 +249,7 @@ bool null0_mount(char* retro_game_path) {
     u8* wasmBuffer[wasmLen];
     PHYSFS_sint64 bytesRead = PHYSFS_readBytes(wasmFile, wasmBuffer, wasmLen);
     if (bytesRead == -1) {
-      printf("Error opening main.wasm: %s\n", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+      fprintf(stderr, "Error opening main.wasm: %s\n", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
       return false;
     }
 
