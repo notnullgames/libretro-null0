@@ -4,11 +4,11 @@
 #include <libgen.h>
 #include <curl/curl.h>
 
-enum FileType {
-   FileTypeInvalid,
-   FileTypeDir,
-   FileTypeWasm,
-   FileTypeZip
+enum Null0FileType {
+   Null0FileTypeInvalid,
+   Null0FileTypeDir,
+   Null0FileTypeWasm,
+   Null0FileTypeZip
 };
 
 static M3Environment* env;
@@ -82,44 +82,14 @@ static size_t nullo_http_callback(void *contents, size_t size, size_t nmemb, voi
   return realsize;
 }
 
-char* nullo_http_get(const char* url) {
-  CURL *curl_handle;
-  CURLcode res;
-
-  struct MemoryStruct chunk;
-  chunk.memory = malloc(1);
-  chunk.size = 0;
-
-  curl_global_init(CURL_GLOBAL_ALL);
-  curl_handle = curl_easy_init();
-  curl_easy_setopt(curl_handle, CURLOPT_URL, url);
-  curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, nullo_http_callback);
-  curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
-  curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
-  curl_easy_setopt(curl_handle, CURLOPT_ACCEPT_ENCODING, "");
-  curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-  res = curl_easy_perform(curl_handle);
-
-  if (res != CURLE_OK) {
-    fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-  }
-
-  curl_easy_cleanup(curl_handle);
-  free(chunk.memory);
-  curl_global_cleanup();
-
-  return chunk.memory;
-}
-
-
 // detect rom-type
-enum FileType null0_rom_type (const char *d) {
+enum Null0FileType null0_rom_type (const char *d) {
    DIR *dirptr;
    if (access ( d, F_OK ) != -1 ) {
       if ((dirptr = opendir (d)) != NULL) {
          // d exists and is a directory
          closedir (dirptr);
-         return FileTypeDir;
+         return Null0FileTypeDir;
       } else {
          // d exists but is not a directory, detect zip
          unsigned char bytes[4];
@@ -127,14 +97,14 @@ enum FileType null0_rom_type (const char *d) {
          fread(&bytes, 4, 1, fp);
          fclose(fp);
          if (bytes[0] == 0x50 && bytes[1] == 0x4b && bytes[2] == 0x03 && bytes[3] == 0x04) {
-            return FileTypeZip;
+            return Null0FileTypeZip;
          } else {
-            return FileTypeWasm;
+            return Null0FileTypeWasm;
          }
       }
    } else {
       // d does not exist
-      return FileTypeInvalid;
+      return Null0FileTypeInvalid;
    }
 }
 
@@ -156,6 +126,58 @@ static void null0_check_wasm3_is_ok () {
   }
 }
 
+// Fatal error
+static m3ApiRawFunction (null0_abort) {
+  m3ApiGetArgMem(const char*, message);
+  m3ApiGetArgMem(const char*, fileName);
+  m3ApiGetArg(uint16_t, lineNumber);
+  m3ApiGetArg(uint16_t, columnNumber);
+
+  char* msg;
+  printf(msg, "%s at %s:%d:%d\n", message, fileName, lineNumber, columnNumber);
+
+  m3ApiSuccess();
+}
+
+static m3ApiRawFunction (null0_http_request_get) {
+  m3ApiReturnType (char*);
+  m3ApiGetArgMem(const char*, url);
+
+  struct MemoryStruct chunk;
+
+  #ifdef NULL0_HTTP
+    CURL *curl_handle;
+    CURLcode res;
+
+    
+    chunk.memory = malloc(1);
+    chunk.size = 0;
+
+    curl_global_init(CURL_GLOBAL_ALL);
+    curl_handle = curl_easy_init();
+    curl_easy_setopt(curl_handle, CURLOPT_URL, url);
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, nullo_http_callback);
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
+    curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl_handle, CURLOPT_ACCEPT_ENCODING, "");
+    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+    res = curl_easy_perform(curl_handle);
+
+    if (res != CURLE_OK) {
+      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    }
+
+    curl_easy_cleanup(curl_handle);
+    free(chunk.memory);
+    curl_global_cleanup();
+  #else
+    printf("Attempting to GET %s but HTTP is disabled.\n", url);
+  #endif
+
+  m3ApiReturn(chunk.memory);
+  m3ApiSuccess();
+}
+
 // Log a string
 static m3ApiRawFunction (null0_log) {
   m3ApiGetArgMem(const char*, message);
@@ -163,15 +185,18 @@ static m3ApiRawFunction (null0_log) {
   m3ApiSuccess();
 }
 
+
 // load a wasm binary buffer
 void null0_load_cart_wasm (u8* wasmBuffer, int byteLength) {
   env = m3_NewEnvironment();
-  runtime = m3_NewRuntime (env, 1024, NULL);
+  runtime = m3_NewRuntime (env, 1024 * 1024, NULL);
   null0_check_wasm3(m3_ParseModule (env, &module, wasmBuffer, byteLength));
   null0_check_wasm3(m3_LoadModule(runtime, module));
 
   // IMPORTS
+  m3_LinkRawFunction(module, "env", "abort", "v(iiii)", &null0_abort);
   m3_LinkRawFunction(module, "env", "null0_log", "v(i)", &null0_log);
+  m3_LinkRawFunction(module, "env", "null0_http_request_get", "i(i)", &null0_http_request_get);
 
   null0_check_wasm3_is_ok();
 
@@ -195,10 +220,10 @@ bool null0_mount(char* retro_game_path) {
   strreplace(name, ".", "_");
   PHYSFS_setWriteDir(PHYSFS_getPrefDir("null0", name));
 
-  enum FileType romType = null0_rom_type(retro_game_path);
-  if (romType == FileTypeInvalid) {
+  enum Null0FileType romType = null0_rom_type(retro_game_path);
+  if (romType == Null0FileTypeInvalid) {
     return false;
-  } else if (romType != FileTypeWasm) {
+  } else if (romType != Null0FileTypeWasm) {
     // mount zip/dir as read-root
     PHYSFS_mount(retro_game_path, NULL, 0);
   }
@@ -206,7 +231,7 @@ bool null0_mount(char* retro_game_path) {
   // add the writable dir to search-path
   PHYSFS_mount(PHYSFS_getWriteDir(), NULL, 0);
 
-  if (romType == FileTypeWasm) {
+  if (romType == Null0FileTypeWasm) {
     // wasm files are special, as there is no root-read filesystem, it's just the entry-point
     FILE *wasmFile;
     wasmFile = fopen(retro_game_path, "rb");
@@ -217,17 +242,17 @@ bool null0_mount(char* retro_game_path) {
 
     fclose(wasmFile);
   } else {
-    if (!FileExistsInPhysFS("cart.wasm")) {
-      printf("no cart.wasm\n");
+    if (!FileExistsInPhysFS("main.wasm")) {
+      printf("no main.wasm\n");
       return false;
     }
 
-    PHYSFS_File* wasmFile = PHYSFS_openRead("cart.wasm");
+    PHYSFS_File* wasmFile = PHYSFS_openRead("main.wasm");
     PHYSFS_uint64 wasmLen = PHYSFS_fileLength(wasmFile);
     u8* wasmBuffer[wasmLen];
     PHYSFS_sint64 bytesRead = PHYSFS_readBytes(wasmFile, wasmBuffer, wasmLen);
     if (bytesRead == -1) {
-      printf("Error opening cart.wasm: %s\n", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+      printf("Error opening main.wasm: %s\n", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
       return false;
     }
 

@@ -9,7 +9,7 @@ INCLUDE(FetchContent)
 ADD_DEFINITIONS(-DNULL0_HTTP)
 
 # allow main.wasm to write to itself (in overlay FS, not the zip) for self-updating
-# add_definitions(-DNULL0_SELFWRITE)
+# ADD_DEFINITIONS(-DNULL0_SELFWRITE)
 
 # Add wasm3 for wasm loading
 FETCHCONTENT_DECLARE(m3 GIT_REPOSITORY https://github.com/wasm3/wasm3.git GIT_TAG main)
