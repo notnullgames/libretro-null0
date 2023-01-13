@@ -145,30 +145,41 @@ bool null0_mount(char* retro_game_path) {
   enum FileType romType = null0_rom_type(retro_game_path);
   if (romType == FileTypeInvalid) {
     return false;
-  } else if (romType == FileTypeWasm) {
-    PHYSFS_mount(dirname(retro_game_path), NULL, 0);
-  } else {
+  } else if (romType != FileTypeWasm) {
+    // mount zip/dir as read-root
     PHYSFS_mount(retro_game_path, NULL, 0);
-  }
-
-  if (!FileExistsInPhysFS("cart.wasm")) {
-    printf("no cart.wasm\n");
-    return false;
-  }
-
-  PHYSFS_File* wasmFile = PHYSFS_openRead("cart.wasm");
-  PHYSFS_uint64 wasmLen = PHYSFS_fileLength(wasmFile);
-  u8* wasmBuffer[wasmLen];
-  PHYSFS_sint64 bytesRead = PHYSFS_readBytes(wasmFile, wasmBuffer, wasmLen);
-  if (bytesRead == -1) {
-    printf("Error opening cart.wasm: %s\n", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-    return false;
   }
 
   // add the writable dir to search-path
   PHYSFS_mount(PHYSFS_getWriteDir(), NULL, 0);
 
-  null0_load_cart_wasm ((u8*)wasmBuffer, wasmLen);
+  if (romType == FileTypeWasm) {
+    // wasm files are special, as there is no root-read filesystem, it's just the entry-point
+    FILE *wasmFile;
+    wasmFile = fopen(retro_game_path, "rb");
+
+    // TODO: read file in to wasmBuffer/wasmLen
+    printf("direct wasm-loading not implemented yet.\n");
+    return false;
+
+    fclose(wasmFile);
+  } else {
+    if (!FileExistsInPhysFS("cart.wasm")) {
+      printf("no cart.wasm\n");
+      return false;
+    }
+
+    PHYSFS_File* wasmFile = PHYSFS_openRead("cart.wasm");
+    PHYSFS_uint64 wasmLen = PHYSFS_fileLength(wasmFile);
+    u8* wasmBuffer[wasmLen];
+    PHYSFS_sint64 bytesRead = PHYSFS_readBytes(wasmFile, wasmBuffer, wasmLen);
+    if (bytesRead == -1) {
+      printf("Error opening cart.wasm: %s\n", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+      return false;
+    }
+
+    null0_load_cart_wasm ((u8*)wasmBuffer, wasmLen);
+  }
 
   return true;
 }
