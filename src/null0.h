@@ -11,11 +11,6 @@ enum FileType {
    FileTypeZip
 };
 
-struct MemoryStruct {
-  char *memory;
-  size_t size;
-};
-
 static M3Environment* env;
 static M3Runtime* runtime;
 static M3Module* module;
@@ -65,36 +60,55 @@ void strreplace(char *string, const char *find, const char *replaceWith){
   }
 }
 
-size_t nullo_http_cb_write(void *contents, size_t size, size_t nmemb, void *userp) {
+struct MemoryStruct {
+  char *memory;
+  size_t size;
+};
+
+static size_t nullo_http_callback(void *contents, size_t size, size_t nmemb, void *userp) {
   size_t realsize = size * nmemb;
   struct MemoryStruct *mem = (struct MemoryStruct *)userp;
- 
-  char *ptr = realloc(mem->memory, mem->size + realsize + 1);
-  if(!ptr) {
-    /* out of memory! */
+
+  mem->memory = realloc(mem->memory, mem->size + realsize + 1);
+  if(mem->memory == NULL) {
     printf("not enough memory (realloc returned NULL)\n");
     return 0;
   }
- 
-  mem->memory = ptr;
+
   memcpy(&(mem->memory[mem->size]), contents, realsize);
   mem->size += realsize;
   mem->memory[mem->size] = 0;
- 
+
   return realsize;
 }
 
 char* nullo_http_get(const char* url) {
-  char* out;
-  CURL *curl = curl_easy_init();
-  if (curl) {
-    curl_easy_setopt(curl, CURLOPT_URL, url);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, nullo_http_cb_write);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &out);
-    CURLcode res = curl_easy_perform(curl);
-    curl_easy_cleanup(curl);
+  CURL *curl_handle;
+  CURLcode res;
+
+  struct MemoryStruct chunk;
+  chunk.memory = malloc(1);
+  chunk.size = 0;
+
+  curl_global_init(CURL_GLOBAL_ALL);
+  curl_handle = curl_easy_init();
+  curl_easy_setopt(curl_handle, CURLOPT_URL, url);
+  curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, nullo_http_callback);
+  curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
+  curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
+  curl_easy_setopt(curl_handle, CURLOPT_ACCEPT_ENCODING, "");
+  curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+  res = curl_easy_perform(curl_handle);
+
+  if (res != CURLE_OK) {
+    fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
   }
-  return out;
+
+  curl_easy_cleanup(curl_handle);
+  free(chunk.memory);
+  curl_global_cleanup();
+
+  return chunk.memory;
 }
 
 
