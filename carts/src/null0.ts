@@ -10,14 +10,13 @@ export function log(text: string): void {
 // make a HTTP/HTTPS GET request
 @external("env", "null0_http_request_get")
 declare function null0_http_get(url: ArrayBuffer): ArrayBuffer
-@external("env", "null0_http_request_post")
-declare function null0_http_post(url: ArrayBuffer): ArrayBuffer
 
-// XXX: I kinda hate typescript, but this seems to work?
+// XXX: this is probly the wrong way to export this shape of object, but it works
 class Http {
   request(url: string): string {
     const out:ArrayBuffer = null0_http_get(String.UTF8.encode(url, true))
-    return String.UTF8.decode(out, true)
+    return String.UTF8.decode(out)
   }
 }
+
 export const http = new Http()

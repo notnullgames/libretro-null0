@@ -171,6 +171,8 @@ static m3ApiRawFunction (null0_http_request_get) {
     fprintf(stderr, "Attempting to GET %s but HTTP is disabled.\n", url);
   #endif
 
+  // printf("HTTP: %s\n%s\n\n", url, chunk.memory);
+
   m3ApiReturn(chunk.memory);
   m3ApiSuccess();
 }

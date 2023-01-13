@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "description": "These are various simple assemblyscript wasm carts, used for testing.",
   "scripts": {
-    "build:justlog": "asc src/justlog.ts -o build/main.wasm && cd build && zip -r justlog.null0 main.wasm && mv main.wasm justlog.wasm",
-    "build:http": "asc src/http.ts -o build/main.wasm && cd build && zip -r http.null0 main.wasm && mv main.wasm http.wasm"
+    "build:justlog": "asc src/justlog.ts -o build/justlog.wasm --optimize --runtime stub --exportRuntime --stats && cd build && cp justlog.wasm main.wasm && zip -r justlog.null0 main.wasm && rm main.wasm",
+    "build:http": "asc src/http.ts -o build/http.wasm --optimize --runtime stub --exportRuntime --bindings esm --stats && cd build && cp http.wasm main.wasm && zip -r http.null0 main.wasm && rm main.wasm"
   },
   "author": "David Konsumer <konsumer@jetboystudio.com>",
   "license": "MIT",
