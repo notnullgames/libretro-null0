@@ -15,7 +15,7 @@ declare function null0_http_get(url: ArrayBuffer): ArrayBuffer
 class Http {
   request(url: string): string {
     const out:ArrayBuffer = null0_http_get(String.UTF8.encode(url, true))
-    return String.UTF8.decode(out)
+    return String.UTF8.decode(out, true)
   }
 }
 

@@ -5,23 +5,19 @@ Libretro-core based runtime for null0
 ## development
 
 ```
-# build it
-cmake -B build .
-make -C build
-
-# run on mac
-/Applications/RetroArch.app/Contents/MacOS/RetroArch -L build/null0_libretro.dylib game.null0
-```
-
-I also added some demo-carts in [carts/](carts/):
-
-```
-# install tools
+# setup tools
 npm i
 
-# get a list of build-targets
-npm run
+# build it
+npm run build:host
 
-# build a simple cart that just says "Hello" in carts/build/justlog.null0
+# build some carts to test
 npm run build:justlog
+npm run build:http
+
+# test with a simple node-based host
+npm test build/justlog.wasm
+
+# run on mac
+/Applications/RetroArch.app/Contents/MacOS/RetroArch -L build/null0_libretro.dylib build/justlog.null0
 ```

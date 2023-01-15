@@ -1,0 +1,16 @@
+{
+  "name": "carts",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "build:host": "cmake -B build . && make -C build",
+    "build:justlog": "asc --optimize --runtime stub --exportRuntime --stats src/carts/justlog.ts -o build/justlog.wasm -t build/justlog.wat --bindings esm && cd build && cp justlog.wasm main.wasm && zip -r justlog.null0 main.wasm && rm main.wasm",
+    "build:http": "asc --optimize --runtime stub --exportRuntime --stats src/carts/http.ts -o build/http.wasm -t build/http.wat --bindings esm && cd build && cp http.wasm main.wasm && zip -r http.null0 main.wasm && rm main.wasm",
+
+    "test": "node src/test.js"
+  },
+  "devDependencies": {
+    "assemblyscript": "^0.26.2"
+  },
+  "type": "module"
+}

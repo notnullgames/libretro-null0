@@ -59,3 +59,7 @@ build/
 
 # built carts
 *.null0
+
+# node
+node_modules
+*.log
