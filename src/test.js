@@ -29,7 +29,7 @@ const wasmBuffer = await readFile(process.argv[2])
 const wasmModule = await WebAssembly.instantiate(wasmBuffer, {
   env: {
     null0_log: m => {
-      console.log(ab2str(__liftBuffer(m)))
+      console.log(ab2str(liftBuffer(m)))
     },
 
     // not dealing with WTF16 strings here, this is just a stub to stop AS from complaining
@@ -38,10 +38,12 @@ const wasmModule = await WebAssembly.instantiate(wasmBuffer, {
     },
 
     // synchronous GET request
+    // WARNING: this is not at all secure, so don't actually use this anywhere!
+    // It could be exploited with url='https://google.com"; rm -rf ~; echo"'
     null0_http_request_get: (u) => {
-      const url = ab2str(__liftBuffer(u))
+      const url = ab2str(liftBuffer(u))
       const buffer = child.execSync(`curl -s "${url}"`)
-      return __lowerBuffer(buffer)
+      return lowerBuffer(buffer)
     }
   }
 })
@@ -49,12 +51,12 @@ const wasmModule = await WebAssembly.instantiate(wasmBuffer, {
 // these came from the generated wrapper
 // In C, these are mostly handled automatically by the macros, but I will probly need to work out __new
 
-function __liftBuffer (pointer) {
+function liftBuffer (pointer) {
   if (!pointer) return null
   return wasmModule.instance.exports.memory.buffer.slice(pointer, pointer + new Uint32Array(wasmModule.instance.exports.memory.buffer)[pointer - 4 >>> 2])
 }
 
-function __lowerBuffer (value) {
+function lowerBuffer (value) {
   if (value == null) return 0
   const pointer = wasmModule.instance.exports.__new(value.byteLength, 1) >>> 0
   new Uint8Array(wasmModule.instance.exports.memory.buffer).set(new Uint8Array(value), pointer)

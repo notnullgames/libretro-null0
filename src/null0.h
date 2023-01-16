@@ -173,7 +173,10 @@ static m3ApiRawFunction (null0_http_request_get) {
 
   // printf("HTTP: %s\n%s\n\n", url, chunk.memory);
 
-  m3ApiReturn(chunk.memory);
+  char* out;
+  out = chunk.memory;
+
+  m3ApiReturn(out);
   m3ApiSuccess();
 }
 
@@ -195,7 +198,7 @@ void null0_load_cart_wasm (u8* wasmBuffer, int byteLength) {
   // IMPORTS
   m3_LinkRawFunction(module, "env", "abort", "v(iiii)", &null0_abort);
   m3_LinkRawFunction(module, "env", "null0_log", "v(i)", &null0_log);
-  m3_LinkRawFunction(module, "env", "null0_http_request_get", "i(i)", &null0_http_request_get);
+  m3_LinkRawFunction(module, "env", "null0_http_request_get", "*(i)", &null0_http_request_get);
 
   null0_check_wasm3_is_ok();
 
