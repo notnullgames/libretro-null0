@@ -1,5 +1,11 @@
 // This is the header for using null0 in assemblyscript
 
+// allocate a buffer, return a pounter
+export function malloc(size: u32): u32 {
+  log(`malloc ${size}`)
+  return 0
+}
+
 // log a string
 @external("env", "null0_log")
 declare function null0_log(text: ArrayBuffer): void

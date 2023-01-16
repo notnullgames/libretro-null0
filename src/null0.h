@@ -14,6 +14,9 @@ enum Null0FileType {
 static M3Environment* env;
 static M3Runtime* runtime;
 static M3Module* module;
+static M3Function* _walloc;
+static M3Function* cart_init;
+
 
 /**
  * Determine if a file exists in the search path.
@@ -187,6 +190,15 @@ static m3ApiRawFunction (null0_log) {
   m3ApiSuccess();
 }
 
+// wrapper around malloc() in cart
+uint32_t wallloc(uint32_t size) {
+  uint32_t p;
+  null0_check_wasm3(m3_CallV(_walloc, size));
+  null0_check_wasm3(m3_GetResultsV(_walloc, p));
+  printf("pointer: %u\n", p);
+  return p;
+}
+
 
 // load a wasm binary buffer
 void null0_load_cart_wasm (u8* wasmBuffer, int byteLength) {
@@ -203,8 +215,9 @@ void null0_load_cart_wasm (u8* wasmBuffer, int byteLength) {
   null0_check_wasm3_is_ok();
 
   // EXPORTS
-  static M3Function* cart_init;
+  m3_FindFunction(&_walloc, runtime, "malloc");
   m3_FindFunction(&cart_init, runtime, "init");
+  
 
   if (cart_init) {
     null0_check_wasm3(m3_CallV(cart_init));
