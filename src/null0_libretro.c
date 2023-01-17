@@ -178,7 +178,7 @@ bool retro_load_game(const struct retro_game_info *info) {
    check_variables();
 
    (void)info;
-   return null0_mount(retro_game_path);
+   return null0_run(retro_game_path);
 }
 
 void retro_unload_game(void) {}

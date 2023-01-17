@@ -227,7 +227,7 @@ void null0_load_cart_wasm (u8* wasmBuffer, int byteLength) {
 }
 
 // mount a file/dir location as root and start the wasm engine
-bool null0_mount(char* retro_game_path) {
+bool null0_run(char* retro_game_path) {
   PHYSFS_init("null0");
 
   // TODO: is this an ok way to set game-name?
