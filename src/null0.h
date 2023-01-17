@@ -14,7 +14,7 @@ enum Null0FileType {
 static M3Environment* env;
 static M3Runtime* runtime;
 static M3Module* module;
-static M3Function* _walloc;
+static M3Function* wmalloc;
 static M3Function* cart_init;
 
 
@@ -140,12 +140,13 @@ static m3ApiRawFunction (null0_abort) {
 }
 
 static m3ApiRawFunction (null0_http_request_get) {
-  m3ApiReturnType (char*);
   m3ApiGetArgMem(const char*, url);
+  m3ApiReturnType (uint32_t);
 
-  struct MemoryStruct chunk;
+  printf("Url: %s", url);
 
   #ifdef NULL0_HTTP
+    struct MemoryStruct chunk;
     CURL *curl_handle;
     CURLcode res;
 
@@ -170,16 +171,21 @@ static m3ApiRawFunction (null0_http_request_get) {
     curl_easy_cleanup(curl_handle);
     free(chunk.memory);
     curl_global_cleanup();
+
+    // lowerBuffer
+    uint32_t wPointer;
+    size_t s = strlen(chunk.memory) + 1;
+    null0_check_wasm3(m3_CallV (wmalloc, s));
+    m3_GetResultsV(wmalloc, &wPointer);
+    char* wBuffer = m3ApiOffsetToPtr(wPointer);
+    memcpy(wBuffer, chunk.memory, s);
+
+    m3ApiReturn(wPointer);
   #else
     fprintf(stderr, "Attempting to GET %s but HTTP is disabled.\n", url);
+    return
   #endif
 
-  // printf("HTTP: %s\n%s\n\n", url, chunk.memory);
-
-  char* out;
-  out = chunk.memory;
-
-  m3ApiReturn(out);
   m3ApiSuccess();
 }
 
@@ -188,15 +194,6 @@ static m3ApiRawFunction (null0_log) {
   m3ApiGetArgMem(const char*, message);
   printf("%s\n", message);
   m3ApiSuccess();
-}
-
-// wrapper around malloc() in cart
-uint32_t wallloc(uint32_t size) {
-  uint32_t p;
-  null0_check_wasm3(m3_CallV(_walloc, size));
-  null0_check_wasm3(m3_GetResultsV(_walloc, p));
-  printf("pointer: %u\n", p);
-  return p;
 }
 
 
@@ -215,14 +212,22 @@ void null0_load_cart_wasm (u8* wasmBuffer, int byteLength) {
   null0_check_wasm3_is_ok();
 
   // EXPORTS
-  m3_FindFunction(&_walloc, runtime, "malloc");
+  m3_FindFunction(&wmalloc, runtime, "wmalloc");
   m3_FindFunction(&cart_init, runtime, "init");
+
+  null0_check_wasm3_is_ok();
+
+  if (!wmalloc) {
+    fprintf(stderr, "no wmalloc in cart\n");
+    exit(1);
+  }
   
 
   if (cart_init) {
     null0_check_wasm3(m3_CallV(cart_init));
   } else {
     fprintf(stderr, "error in init() in cart.\n");
+    exit(1);
   }
 }
 
