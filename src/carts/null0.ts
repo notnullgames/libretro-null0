@@ -9,14 +9,9 @@ export function log(text: string): void {
 
 // make a HTTP/HTTPS GET request
 @external("env", "null0_http_request_get")
-declare function null0_http_get(url: ArrayBuffer): ArrayBuffer
+declare function null0_http_request_get(url: ArrayBuffer): ArrayBuffer
 
-// XXX: this is probly the wrong way to export this shape of object, but it works
-class Http {
-  request(url: string): string {
-    const out:ArrayBuffer = null0_http_get(String.UTF8.encode(url, true))
-    return String.UTF8.decode(out, true)
-  }
+export function http_get(url: string): string {
+  const out:ArrayBuffer = null0_http_request_get(String.UTF8.encode(url, true))
+  return String.UTF8.decode(out, true)
 }
-
-export const http = new Http()
