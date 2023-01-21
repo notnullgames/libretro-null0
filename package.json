@@ -7,7 +7,7 @@
     "build:justlog": "asc --lib src/carts/null0.ts --runtime stub --exportRuntime --optimize --stats src/carts/justlog.ts -o build/justlog.wasm -t build/justlog.wat --bindings esm && cd build && cp justlog.wasm main.wasm && zip -r justlog.null0 main.wasm && rm main.wasm",
     "build:http": "asc --lib src/carts/null0.ts --runtime stub --exportRuntime --optimize --stats src/carts/http.ts -o build/http.wasm -t build/http.wat --bindings esm && cd build && cp http.wasm main.wasm && zip -r http.null0 main.wasm && rm main.wasm",
     "build:draw": "asc --lib src/carts/null0.ts --runtime stub --exportRuntime --optimize --stats src/carts/draw.ts -o build/draw.wasm -t build/draw.wat --bindings esm && cd build && cp draw.wasm main.wasm && zip -r draw.null0 main.wasm && rm main.wasm",
-
+    "gen:json": "node tools/genjson.mjs > tools/rimage.json",
     "test": "node src/test.js"
   },
   "devDependencies": {

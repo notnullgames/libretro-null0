@@ -1,0 +1,1262 @@
+[
+  {
+    "returns": "Image",
+    "name": "LoadImage",
+    "params": [
+      [
+        "const char*",
+        "fileName"
+      ]
+    ],
+    "comment": "Load image from file into CPU memory (RAM)"
+  },
+  {
+    "returns": "Image",
+    "name": "LoadImageRaw",
+    "params": [
+      [
+        "const char*",
+        "fileName"
+      ],
+      [
+        "int",
+        "width"
+      ],
+      [
+        "int",
+        "height"
+      ],
+      [
+        "int",
+        "format"
+      ],
+      [
+        "int",
+        "headerSize"
+      ]
+    ],
+    "comment": "Load image from RAW file data"
+  },
+  {
+    "returns": "Image",
+    "name": "LoadImageAnim",
+    "params": [
+      [
+        "const char*",
+        "fileName"
+      ],
+      [
+        "int*",
+        "frames"
+      ]
+    ],
+    "comment": "Load image sequence from file (frames appended to image.data)"
+  },
+  {
+    "returns": "Image",
+    "name": "LoadImageFromMemory",
+    "params": [
+      [
+        "const char*",
+        "fileType"
+      ],
+      [
+        "const unsigned char*",
+        "fileData"
+      ],
+      [
+        "int",
+        "dataSize"
+      ]
+    ],
+    "comment": "Load image from memory buffer, fileType refers to extension: i.e. '.png'"
+  },
+  {
+    "returns": "Image",
+    "name": "LoadImageFromScreen",
+    "params": [
+      [
+        "void"
+      ]
+    ],
+    "comment": "Load image from screen buffer and (screenshot)"
+  },
+  {
+    "returns": "void",
+    "name": "UnloadImage",
+    "params": [
+      [
+        "Image",
+        "image"
+      ]
+    ],
+    "comment": "Unload image from CPU memory (RAM)"
+  },
+  {
+    "returns": "bool",
+    "name": "ExportImage",
+    "params": [
+      [
+        "Image",
+        "image"
+      ],
+      [
+        "const char*",
+        "fileName"
+      ]
+    ],
+    "comment": "Export image data to file, returns true on success"
+  },
+  {
+    "returns": "bool",
+    "name": "ExportImageAsCode",
+    "params": [
+      [
+        "Image",
+        "image"
+      ],
+      [
+        "const char*",
+        "fileName"
+      ]
+    ],
+    "comment": "Export image as code file defining an array of bytes, returns true on success"
+  },
+  {
+    "returns": "Image",
+    "name": "GenImageColor",
+    "params": [
+      [
+        "int",
+        "width"
+      ],
+      [
+        "int",
+        "height"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Generate image: plain color"
+  },
+  {
+    "returns": "Image",
+    "name": "GenImageGradientV",
+    "params": [
+      [
+        "int",
+        "width"
+      ],
+      [
+        "int",
+        "height"
+      ],
+      [
+        "Color",
+        "top"
+      ],
+      [
+        "Color",
+        "bottom"
+      ]
+    ],
+    "comment": "Generate image: vertical gradient"
+  },
+  {
+    "returns": "Image",
+    "name": "GenImageGradientH",
+    "params": [
+      [
+        "int",
+        "width"
+      ],
+      [
+        "int",
+        "height"
+      ],
+      [
+        "Color",
+        "left"
+      ],
+      [
+        "Color",
+        "right"
+      ]
+    ],
+    "comment": "Generate image: horizontal gradient"
+  },
+  {
+    "returns": "Image",
+    "name": "GenImageGradientRadial",
+    "params": [
+      [
+        "int",
+        "width"
+      ],
+      [
+        "int",
+        "height"
+      ],
+      [
+        "float",
+        "density"
+      ],
+      [
+        "Color",
+        "inner"
+      ],
+      [
+        "Color",
+        "outer"
+      ]
+    ],
+    "comment": "Generate image: radial gradient"
+  },
+  {
+    "returns": "Image",
+    "name": "GenImageChecked",
+    "params": [
+      [
+        "int",
+        "width"
+      ],
+      [
+        "int",
+        "height"
+      ],
+      [
+        "int",
+        "checksX"
+      ],
+      [
+        "int",
+        "checksY"
+      ],
+      [
+        "Color",
+        "col1"
+      ],
+      [
+        "Color",
+        "col2"
+      ]
+    ],
+    "comment": "Generate image: checked"
+  },
+  {
+    "returns": "Image",
+    "name": "GenImageWhiteNoise",
+    "params": [
+      [
+        "int",
+        "width"
+      ],
+      [
+        "int",
+        "height"
+      ],
+      [
+        "float",
+        "factor"
+      ]
+    ],
+    "comment": "Generate image: white noise"
+  },
+  {
+    "returns": "Image",
+    "name": "GenImagePerlinNoise",
+    "params": [
+      [
+        "int",
+        "width"
+      ],
+      [
+        "int",
+        "height"
+      ],
+      [
+        "int",
+        "offsetX"
+      ],
+      [
+        "int",
+        "offsetY"
+      ],
+      [
+        "float",
+        "scale"
+      ]
+    ],
+    "comment": "Generate image: perlin noise"
+  },
+  {
+    "returns": "Image",
+    "name": "GenImageCellular",
+    "params": [
+      [
+        "int",
+        "width"
+      ],
+      [
+        "int",
+        "height"
+      ],
+      [
+        "int",
+        "tileSize"
+      ]
+    ],
+    "comment": "Generate image: cellular algorithm, bigger tileSize means bigger cells"
+  },
+  {
+    "returns": "Image",
+    "name": "ImageCopy",
+    "params": [
+      [
+        "Image",
+        "image"
+      ]
+    ],
+    "comment": "Create an image duplicate (useful for transformations)"
+  },
+  {
+    "returns": "Image",
+    "name": "ImageFromImage",
+    "params": [
+      [
+        "Image",
+        "image"
+      ],
+      [
+        "Rectangle",
+        "rec"
+      ]
+    ],
+    "comment": "Create an image from another image piece"
+  },
+  {
+    "returns": "Image",
+    "name": "ImageText",
+    "params": [
+      [
+        "const char*",
+        "text"
+      ],
+      [
+        "int",
+        "fontSize"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Create an image from text (default font)"
+  },
+  {
+    "returns": "void",
+    "name": "ImageFormat",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ],
+      [
+        "int",
+        "newFormat"
+      ]
+    ],
+    "comment": "Convert image data to desired format"
+  },
+  {
+    "returns": "void",
+    "name": "ImageToPOT",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ],
+      [
+        "Color",
+        "fill"
+      ]
+    ],
+    "comment": "Convert image to POT (power-of-two)"
+  },
+  {
+    "returns": "void",
+    "name": "ImageCrop",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ],
+      [
+        "Rectangle",
+        "crop"
+      ]
+    ],
+    "comment": "Crop an image to a defined rectangle"
+  },
+  {
+    "returns": "void",
+    "name": "ImageAlphaCrop",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ],
+      [
+        "float",
+        "threshold"
+      ]
+    ],
+    "comment": "Crop image depending on alpha value"
+  },
+  {
+    "returns": "void",
+    "name": "ImageAlphaClear",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ],
+      [
+        "Color",
+        "color"
+      ],
+      [
+        "float",
+        "threshold"
+      ]
+    ],
+    "comment": "Clear alpha channel to desired color"
+  },
+  {
+    "returns": "void",
+    "name": "ImageAlphaMask",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ],
+      [
+        "Image",
+        "alphaMask"
+      ]
+    ],
+    "comment": "Apply alpha mask to image"
+  },
+  {
+    "returns": "void",
+    "name": "ImageAlphaPremultiply",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ]
+    ],
+    "comment": "Premultiply alpha channel"
+  },
+  {
+    "returns": "void",
+    "name": "ImageResize",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ],
+      [
+        "int",
+        "newWidth"
+      ],
+      [
+        "int",
+        "newHeight"
+      ]
+    ],
+    "comment": "Resize image (Bicubic scaling algorithm)"
+  },
+  {
+    "returns": "void",
+    "name": "ImageResizeNN",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ],
+      [
+        "int",
+        "newWidth"
+      ],
+      [
+        "int",
+        "newHeight"
+      ]
+    ],
+    "comment": "Resize image (Nearest-Neighbor scaling algorithm)"
+  },
+  {
+    "returns": "void",
+    "name": "ImageResizeCanvas",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ],
+      [
+        "int",
+        "newWidth"
+      ],
+      [
+        "int",
+        "newHeight"
+      ],
+      [
+        "int",
+        "offsetX"
+      ],
+      [
+        "int",
+        "offsetY"
+      ],
+      [
+        "Color",
+        "fill"
+      ]
+    ],
+    "comment": "Resize canvas and fill with color"
+  },
+  {
+    "returns": "void",
+    "name": "ImageMipmaps",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ]
+    ],
+    "comment": "Compute all mipmap levels for a provided image"
+  },
+  {
+    "returns": "void",
+    "name": "ImageDither",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ],
+      [
+        "int",
+        "rBpp"
+      ],
+      [
+        "int",
+        "gBpp"
+      ],
+      [
+        "int",
+        "bBpp"
+      ],
+      [
+        "int",
+        "aBpp"
+      ]
+    ],
+    "comment": "Dither image data to 16bpp or lower (Floyd-Steinberg dithering)"
+  },
+  {
+    "returns": "void",
+    "name": "ImageFlipVertical",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ]
+    ],
+    "comment": "Flip image vertically"
+  },
+  {
+    "returns": "void",
+    "name": "ImageFlipHorizontal",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ]
+    ],
+    "comment": "Flip image horizontally"
+  },
+  {
+    "returns": "void",
+    "name": "ImageRotateCW",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ]
+    ],
+    "comment": "Rotate image clockwise 90deg"
+  },
+  {
+    "returns": "void",
+    "name": "ImageRotateCCW",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ]
+    ],
+    "comment": "Rotate image counter-clockwise 90deg"
+  },
+  {
+    "returns": "void",
+    "name": "ImageColorTint",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Modify image color: tint"
+  },
+  {
+    "returns": "void",
+    "name": "ImageColorInvert",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ]
+    ],
+    "comment": "Modify image color: invert"
+  },
+  {
+    "returns": "void",
+    "name": "ImageColorGrayscale",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ]
+    ],
+    "comment": "Modify image color: grayscale"
+  },
+  {
+    "returns": "void",
+    "name": "ImageColorContrast",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ],
+      [
+        "float",
+        "contrast"
+      ]
+    ],
+    "comment": "Modify image color: contrast (-100 to 100)"
+  },
+  {
+    "returns": "void",
+    "name": "ImageColorBrightness",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ],
+      [
+        "int",
+        "brightness"
+      ]
+    ],
+    "comment": "Modify image color: brightness (-255 to 255)"
+  },
+  {
+    "returns": "void",
+    "name": "ImageColorReplace",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ],
+      [
+        "Color",
+        "color"
+      ],
+      [
+        "Color",
+        "replace"
+      ]
+    ],
+    "comment": "Modify image color: replace color"
+  },
+  {
+    "returns": "Color",
+    "name": "LoadImageColors",
+    "params": [
+      [
+        "Image",
+        "image"
+      ]
+    ],
+    "comment": "Load color data from image as a Color array (RGBA - 32bit)"
+  },
+  {
+    "returns": "Color",
+    "name": "LoadImagePalette",
+    "params": [
+      [
+        "Image",
+        "image"
+      ],
+      [
+        "int",
+        "maxPaletteSize"
+      ],
+      [
+        "int*",
+        "colorCount"
+      ]
+    ],
+    "comment": "Load colors palette from image as a Color array (RGBA - 32bit)"
+  },
+  {
+    "returns": "void",
+    "name": "UnloadImageColors",
+    "params": [
+      [
+        "Color*",
+        "colors"
+      ]
+    ],
+    "comment": "Unload color data loaded with LoadImageColors()"
+  },
+  {
+    "returns": "void",
+    "name": "UnloadImagePalette",
+    "params": [
+      [
+        "Color*",
+        "colors"
+      ]
+    ],
+    "comment": "Unload colors palette loaded with LoadImagePalette()"
+  },
+  {
+    "returns": "Color",
+    "name": "GetImageColor",
+    "params": [
+      [
+        "Image",
+        "image"
+      ],
+      [
+        "int",
+        "x"
+      ],
+      [
+        "int",
+        "y"
+      ]
+    ],
+    "comment": "Get image pixel color at (x, y) position"
+  },
+  {
+    "returns": "void",
+    "name": "ImageClearBackground",
+    "params": [
+      [
+        "Image*",
+        "dst"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Clear image background with given color"
+  },
+  {
+    "returns": "void",
+    "name": "ImageDrawPixel",
+    "params": [
+      [
+        "Image*",
+        "dst"
+      ],
+      [
+        "int",
+        "posX"
+      ],
+      [
+        "int",
+        "posY"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Draw pixel within an image"
+  },
+  {
+    "returns": "void",
+    "name": "ImageDrawPixelV",
+    "params": [
+      [
+        "Image*",
+        "dst"
+      ],
+      [
+        "Vector2",
+        "position"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Draw pixel within an image (Vector version)"
+  },
+  {
+    "returns": "void",
+    "name": "ImageDrawLine",
+    "params": [
+      [
+        "Image*",
+        "dst"
+      ],
+      [
+        "int",
+        "startPosX"
+      ],
+      [
+        "int",
+        "startPosY"
+      ],
+      [
+        "int",
+        "endPosX"
+      ],
+      [
+        "int",
+        "endPosY"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Draw line within an image"
+  },
+  {
+    "returns": "void",
+    "name": "ImageDrawLineV",
+    "params": [
+      [
+        "Image*",
+        "dst"
+      ],
+      [
+        "Vector2",
+        "start"
+      ],
+      [
+        "Vector2",
+        "end"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Draw line within an image (Vector version)"
+  },
+  {
+    "returns": "void",
+    "name": "ImageDrawCircle",
+    "params": [
+      [
+        "Image*",
+        "dst"
+      ],
+      [
+        "int",
+        "centerX"
+      ],
+      [
+        "int",
+        "centerY"
+      ],
+      [
+        "int",
+        "radius"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Draw circle within an image"
+  },
+  {
+    "returns": "void",
+    "name": "ImageDrawCircleV",
+    "params": [
+      [
+        "Image*",
+        "dst"
+      ],
+      [
+        "Vector2",
+        "center"
+      ],
+      [
+        "int",
+        "radius"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Draw circle within an image (Vector version)"
+  },
+  {
+    "returns": "void",
+    "name": "ImageDrawRectangle",
+    "params": [
+      [
+        "Image*",
+        "dst"
+      ],
+      [
+        "int",
+        "posX"
+      ],
+      [
+        "int",
+        "posY"
+      ],
+      [
+        "int",
+        "width"
+      ],
+      [
+        "int",
+        "height"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Draw rectangle within an image"
+  },
+  {
+    "returns": "void",
+    "name": "ImageDrawRectangleV",
+    "params": [
+      [
+        "Image*",
+        "dst"
+      ],
+      [
+        "Vector2",
+        "position"
+      ],
+      [
+        "Vector2",
+        "size"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Draw rectangle within an image (Vector version)"
+  },
+  {
+    "returns": "void",
+    "name": "ImageDrawRectangleRec",
+    "params": [
+      [
+        "Image*",
+        "dst"
+      ],
+      [
+        "Rectangle",
+        "rec"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Draw rectangle within an image"
+  },
+  {
+    "returns": "void",
+    "name": "ImageDrawRectangleLines",
+    "params": [
+      [
+        "Image*",
+        "dst"
+      ],
+      [
+        "Rectangle",
+        "rec"
+      ],
+      [
+        "int",
+        "thick"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Draw rectangle lines within an image"
+  },
+  {
+    "returns": "void",
+    "name": "ImageDraw",
+    "params": [
+      [
+        "Image*",
+        "dst"
+      ],
+      [
+        "Image",
+        "src"
+      ],
+      [
+        "Rectangle",
+        "srcRec"
+      ],
+      [
+        "Rectangle",
+        "dstRec"
+      ],
+      [
+        "Color",
+        "tint"
+      ]
+    ],
+    "comment": "Draw a source image within a destination image (tint applied to source)"
+  },
+  {
+    "returns": "void",
+    "name": "ImageDrawText",
+    "params": [
+      [
+        "Image*",
+        "dst"
+      ],
+      [
+        "const char*",
+        "text"
+      ],
+      [
+        "int",
+        "posX"
+      ],
+      [
+        "int",
+        "posY"
+      ],
+      [
+        "int",
+        "fontSize"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Draw text (using default font) within an image (destination)"
+  },
+  {
+    "returns": "Color",
+    "name": "Fade",
+    "params": [
+      [
+        "Color",
+        "color"
+      ],
+      [
+        "float",
+        "alpha"
+      ]
+    ],
+    "comment": "Get color with alpha applied, alpha goes from 0.0f to 1.0f"
+  },
+  {
+    "returns": "int",
+    "name": "ColorToInt",
+    "params": [
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Get hexadecimal value for a Color"
+  },
+  {
+    "returns": "Vector4",
+    "name": "ColorNormalize",
+    "params": [
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Get Color normalized as float [0..1]"
+  },
+  {
+    "returns": "Color",
+    "name": "ColorFromNormalized",
+    "params": [
+      [
+        "Vector4",
+        "normalized"
+      ]
+    ],
+    "comment": "Get Color from normalized values [0..1]"
+  },
+  {
+    "returns": "Vector3",
+    "name": "ColorToHSV",
+    "params": [
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Get HSV values for a Color, hue [0..360], saturation/value [0..1]"
+  },
+  {
+    "returns": "Color",
+    "name": "ColorFromHSV",
+    "params": [
+      [
+        "float",
+        "hue"
+      ],
+      [
+        "float",
+        "saturation"
+      ],
+      [
+        "float",
+        "value"
+      ]
+    ],
+    "comment": "Get a Color from HSV values, hue [0..360], saturation/value [0..1]"
+  },
+  {
+    "returns": "Color",
+    "name": "ColorAlpha",
+    "params": [
+      [
+        "Color",
+        "color"
+      ],
+      [
+        "float",
+        "alpha"
+      ]
+    ],
+    "comment": "Get color with alpha applied, alpha goes from 0.0f to 1.0f"
+  },
+  {
+    "returns": "Color",
+    "name": "ColorAlphaBlend",
+    "params": [
+      [
+        "Color",
+        "dst"
+      ],
+      [
+        "Color",
+        "src"
+      ],
+      [
+        "Color",
+        "tint"
+      ]
+    ],
+    "comment": "Get src alpha-blended into dst color with tint"
+  },
+  {
+    "returns": "Color",
+    "name": "GetColor",
+    "params": [
+      [
+        "unsigned int",
+        "hexValue"
+      ]
+    ],
+    "comment": "Get Color structure from hexadecimal value"
+  },
+  {
+    "returns": "Color",
+    "name": "GetPixelColor",
+    "params": [
+      [
+        "void*",
+        "srcPtr"
+      ],
+      [
+        "int",
+        "format"
+      ]
+    ],
+    "comment": "Get Color from a source pixel pointer of certain format"
+  },
+  {
+    "returns": "void",
+    "name": "SetPixelColor",
+    "params": [
+      [
+        "void*",
+        "dstPtr"
+      ],
+      [
+        "Color",
+        "color"
+      ],
+      [
+        "int",
+        "format"
+      ]
+    ],
+    "comment": "Set color formatted into destination pixel pointer"
+  },
+  {
+    "returns": "int",
+    "name": "GetPixelDataSize",
+    "params": [
+      [
+        "int",
+        "width"
+      ],
+      [
+        "int",
+        "height"
+      ],
+      [
+        "int",
+        "format"
+      ]
+    ],
+    "comment": "Get pixel data size in bytes for certain format"
+  }
+]

@@ -3,6 +3,7 @@
 #include <stdarg.h> // va_list
 #include <stdio.h> // stderr
 #include <string.h>
+#include <sys/time.h>
 
 #include "libretro.h"
 
@@ -30,6 +31,8 @@ static M3Module* module;
 static M3Function* as_new;
 static M3Function* cart_load;
 static M3Function* cart_update;
+
+struct timeval stop, start;
 
 // this checks the general state of the runtime, to make sure there are no errors lingering
 static void null0_check_wasm3_is_ok () {
@@ -265,8 +268,10 @@ void UpdateGame() {
       return;
    }
 
+   gettimeofday(&stop, NULL);
+
    if (cart_update) {
-    null0_check_wasm3(m3_CallV(cart_update));
+    null0_check_wasm3(m3_CallV(cart_update, (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec));
    } else {
     // TODO: some cute embedded "no update" screen here
    }
@@ -347,6 +352,7 @@ static m3ApiRawFunction (null0_DrawRectangle) {
 
 bool LoadGame(const void* wasmBuffer, size_t byteLength, const char* path) {
   TraceLog(LOG_DEBUG, "LoadGame\n");
+  gettimeofday(&start, NULL);
 
   // TODO: handle zip-files & directories
    
