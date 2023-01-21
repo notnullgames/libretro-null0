@@ -1,15 +1,23 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
-PROJECT(null0_libretro)
-SET(CMAKE_C_STANDARD 99)
+PROJECT(null0-libretro)
+SET(CMAKE_C_STANDARD 17)
 INCLUDE(FetchContent)
 
-# WARNING: comment these for normal libretro core.
+# WARNING: comment these for normal libretro core. They are bad if you don't want games to do terrible things.
 
 # this will allow the rom to hit network resources
 ADD_DEFINITIONS(-DNULL0_HTTP)
 
 # allow main.wasm to write to itself (in overlay FS, not the zip) for self-updating
 # ADD_DEFINITIONS(-DNULL0_SELFWRITE)
+
+# Add rimage for raylib-like image APIs
+FETCHCONTENT_DECLARE(rimage GIT_REPOSITORY https://github.com/RobLoach/rimage.git GIT_TAG master)
+FETCHCONTENT_MAKEAVAILABLE(rimage)
+
+# add libretro
+FETCHCONTENT_DECLARE(libretro GIT_REPOSITORY https://github.com/libretro/libretro-common.git GIT_TAG master)
+FETCHCONTENT_MAKEAVAILABLE(libretro)
 
 # Add wasm3 for wasm loading
 FETCHCONTENT_DECLARE(m3 GIT_REPOSITORY https://github.com/wasm3/wasm3.git GIT_TAG main)
@@ -39,7 +47,9 @@ INCLUDE_DIRECTORIES(${physfs_SOURCE_DIR}/src)
 FIND_PACKAGE(CURL REQUIRED)
 INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIR})
 
-FILE(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS src/*.c src/*.h)
+FILE(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS src/*.c)
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES PREFIX "")
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE m3 physfs-static CURL::libcurl)
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${libretro_SOURCE_DIR}/include)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE m3 rimage physfs-static CURL::libcurl)
+

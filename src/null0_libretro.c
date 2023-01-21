@@ -1,33 +1,58 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdarg.h>
+#include <stdlib.h> // free(), malloc()
+#include <stdbool.h> // bool
+#include <stdarg.h> // va_list
+#include <stdio.h> // stderr
 #include <string.h>
-#include <math.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <unistd.h>
-#include "null0.h"
 
-#if defined(_WIN32) && !defined(_XBOX)
-   #include <windows.h>
-#endif
 #include "libretro.h"
 
-#define VIDEO_WIDTH 320
-#define VIDEO_HEIGHT 240
-#define VIDEO_PIXELS VIDEO_WIDTH * VIDEO_HEIGHT
+#include "wasm3.h"
+#include "m3_env.h"
+#include "physfs.h"
 
-static uint8_t *frame_buf;
-static struct retro_log_callback logging;
-static retro_log_printf_t log_cb;
-static bool use_audio_cb;
-static float last_aspect;
-static float last_sample_rate;
-char retro_base_directory[4096];
-char retro_game_path[4096];
+#define RIMAGE_IMPLEMENTATION
+#include "rimage.h"
 
-static void fallback_log(enum retro_log_level level, const char *fmt, ...) {
+typedef struct Core {
+   Image backBuffer;
+   Image frontBuffer;
+   retro_video_refresh_t video_cb;
+   retro_audio_sample_t audio_cb;
+   retro_audio_sample_batch_t audio_batch_cb;
+   retro_input_poll_t input_poll_cb;
+   retro_input_state_t input_state_cb;
+} Core;
+
+static M3Environment* env;
+static M3Runtime* runtime;
+static M3Module* module;
+
+static M3Function* as_new;
+static M3Function* cart_load;
+static M3Function* cart_update;
+
+// this checks the general state of the runtime, to make sure there are no errors lingering
+static void null0_check_wasm3_is_ok () {
+  M3ErrorInfo error;
+  m3_GetErrorInfo(runtime, &error);
+  if (error.result) {
+    fprintf(stderr, "%s - %s\n", error.result, error.message);
+  }
+}
+
+// all wasm3 functions return same sort of error-pattern, so this wraps that
+static void null0_check_wasm3 (M3Result result) {
+  if (result) {
+    null0_check_wasm3_is_ok();
+  }
+}
+
+retro_environment_t environ_cb;
+Core* core;
+retro_log_printf_t log_cb;
+struct retro_log_callback logging;
+
+void TraceLogFallback(enum retro_log_level level, const char *fmt, ...) {
    (void)level;
    va_list va;
    va_start(va, fmt);
@@ -35,19 +60,64 @@ static void fallback_log(enum retro_log_level level, const char *fmt, ...) {
    va_end(va);
 }
 
-static retro_environment_t environ_cb;
+Core* GetCoreHandle() {
+   return core;
+}
+
+bool IsCoreReady() {
+   return core != NULL;
+}
+
+void CloseCore() {
+   if (!IsCoreReady()) {
+      return;
+   }
+
+   UnloadImage(core->backBuffer);
+   UnloadImage(core->frontBuffer);
+
+   free(core);
+   core = NULL;
+}
+
+int GetScreenWidth() {
+   if (IsCoreReady()) {
+      return core->backBuffer.width;
+   }
+
+   return 0;
+}
+
+int GetScreenHeight() {
+   if (IsCoreReady()) {
+      return core->backBuffer.height;
+   }
+
+   return 0;
+}
+
+bool InitCore() {
+   // Make sure the core is available to be loaded.
+   CloseCore();
+
+   core = malloc(sizeof(Core));
+
+   // Initialize the screen buffers. Back as RGBA8888, front as RGB565.
+   int width = 640;
+   int height = 480;
+   core->backBuffer = GenImageColor(width, height, RED); // RGBA8888
+   core->frontBuffer = GenImageColor(width, height, BLUE);
+   ImageFormat(&core->frontBuffer, PIXELFORMAT_UNCOMPRESSED_R5G6B5);
+
+   return true;
+}
 
 void retro_init(void) {
-   frame_buf = (uint8_t*)malloc(VIDEO_PIXELS * sizeof(uint32_t));
-   const char *dir = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir) {
-      snprintf(retro_base_directory, sizeof(retro_base_directory), "%s", dir);
-   }
+   InitCore();
 }
 
 void retro_deinit(void) {
-   free(frame_buf);
-   frame_buf = NULL;
+   CloseCore();
 }
 
 unsigned retro_api_version(void) {
@@ -59,129 +129,302 @@ void retro_set_controller_port_device(unsigned port, unsigned device) {}
 void retro_get_system_info(struct retro_system_info *info) {
    memset(info, 0, sizeof(*info));
    info->library_name     = "null0";
-   info->library_version  = "0.1";
-   info->need_fullpath    = true;
-   info->valid_extensions = "null0";
+   info->library_version  = "0.0.1";
+   info->need_fullpath    = false;
+   info->valid_extensions = "null0|wasm|zip";
+   info->block_extract    = false;
 }
 
-static retro_video_refresh_t video_cb;
-static retro_audio_sample_t audio_cb;
-static retro_audio_sample_batch_t audio_batch_cb;
-static retro_input_poll_t input_poll_cb;
-static retro_input_state_t input_state_cb;
-
 void retro_get_system_av_info(struct retro_system_av_info *info) {
-   float aspect                = 0.0f;
-   float sampling_rate         = 44100.0f;
+   if (!IsCoreReady()) {
+      return;
+   }
+   
+   info->geometry.base_width   = GetScreenWidth();
+   info->geometry.base_height  = GetScreenHeight();
+   info->geometry.max_width    = GetScreenWidth();
+   info->geometry.max_height   = GetScreenHeight();
+   info->geometry.aspect_ratio = (float)GetScreenWidth() / (float)GetScreenHeight();
+   info->timing.fps = 60.0;
+   info->timing.sample_rate = 44100.0f;
+}
 
-   info->geometry.base_width   = VIDEO_WIDTH;
-   info->geometry.base_height  = VIDEO_HEIGHT;
-   info->geometry.max_width    = VIDEO_WIDTH;
-   info->geometry.max_height   = VIDEO_HEIGHT;
-   info->geometry.aspect_ratio = aspect;
+void TraceLog(int logLevel, const char *text, ...) {
+   enum retro_log_level level;
+   switch (logLevel) {
+      case LOG_ALL:
+         level = RETRO_LOG_INFO;
+         break;
+      case LOG_TRACE:
+         level = RETRO_LOG_DEBUG;
+         break;
+      case LOG_DEBUG:
+         level = RETRO_LOG_DEBUG;
+         break;
+      case LOG_INFO:
+         level = RETRO_LOG_INFO;
+         break;
+      case LOG_WARNING:
+         level = RETRO_LOG_WARN;
+         break;
+      case LOG_ERROR:
+         level = RETRO_LOG_ERROR;
+         break;
+      case LOG_FATAL:
+         level = RETRO_LOG_ERROR;
+         break;
+      case LOG_NONE:
+         return;
+   }
 
-   last_aspect                 = aspect;
-   last_sample_rate            = sampling_rate;
+   va_list va;
+   va_start(va, text);
+   if (log_cb != NULL) {
+      log_cb(level, text, va);
+   }
+   else {
+      TraceLogFallback(level, text, va);
+   }
+   va_end(va);
 }
 
 void retro_set_environment(retro_environment_t cb) {
+
    environ_cb = cb;
 
-   if (cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &logging))
+   if (cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &logging)) {
       log_cb = logging.log;
-   else
-      log_cb = fallback_log;
+   }
+   else {
+      log_cb = TraceLogFallback;
+   }
 
-   static const struct retro_controller_description controllers[] = {
-      { "Nintendo DS", RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_JOYPAD, 0) },
-   };
-
-   static const struct retro_controller_info ports[] = {
-      { controllers, 1 },
-      { NULL, 0 },
-   };
-
-   cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
+   bool supports_no_game = true;
+   cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &supports_no_game);
 }
 
 void retro_set_audio_sample(retro_audio_sample_t cb) {
-   audio_cb = cb;
+   if (!IsCoreReady()) {
+      return;
+   }
+
+   core->audio_cb = cb;
 }
 
 void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb) {
-   audio_batch_cb = cb;
+   if (!IsCoreReady()) {
+      return;
+   }
+
+   core->audio_batch_cb = cb;
 }
 
 void retro_set_input_poll(retro_input_poll_t cb) {
-   input_poll_cb = cb;
+   if (!IsCoreReady()) {
+      return;
+   }
+
+   core->input_poll_cb = cb;
 }
 
 void retro_set_input_state(retro_input_state_t cb) {
-   input_state_cb = cb;
+   if (!IsCoreReady()) {
+      return;
+   }
+
+   core->input_state_cb = cb;
 }
 
 void retro_set_video_refresh(retro_video_refresh_t cb) {
-   video_cb = cb;
+   if (!IsCoreReady()) {
+      return;
+   }
+
+   core->video_cb = cb;
 }
 
-static unsigned phase;
+void retro_reset(void) {
+   TraceLog(LOG_INFO, "retro_reset");
+}
 
-void retro_reset(void) {}
-
-static void update_input(void) {}
+void PollInputEvents(void) {
+   // TODO: Update the input state
+}
 
 static void check_variables(void) {}
 
 static void audio_callback(void) {
-   for (unsigned i = 0; i < 30000 / 60; i++, phase++) {
-      int16_t val = 0x800 * sinf(2.0f * M_PI * phase * 300.0f / 30000.0f);
-      audio_cb(val, val);
-   }
-
-   phase %= 100;
 }
 
 static void audio_set_state(bool enable) {
    (void)enable;
 }
 
+void ClearBackground(Color color) {
+   ImageClearBackground(&core->backBuffer, color);
+}
+
+void UpdateGame() {
+   if (!IsCoreReady()) {
+      return;
+   }
+
+   if (cart_update) {
+    null0_check_wasm3(m3_CallV(cart_update));
+   } else {
+    // TODO: some cute embedded "no update" screen here
+    printf("no update\n");
+   }
+}
+
 void retro_run(void) {
-   update_input();
+   if (!IsCoreReady()) {
+      return;
+   }
+   PollInputEvents();
 
    bool updated = false;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated) {
       check_variables();
    }
+
+   UpdateGame();
+   // Render the backbuffer to the front buffer.
+   Rectangle screenRect = {0, 0, core->frontBuffer.width, core->frontBuffer.height};
+   ImageDraw(&core->frontBuffer, core->backBuffer, screenRect, screenRect, WHITE);
+
+   size_t pitch = (size_t)GetPixelDataSize(core->frontBuffer.width, 1, core->frontBuffer.format);
+   core->video_cb((const void*)core->frontBuffer.data, core->frontBuffer.width, core->frontBuffer.height, pitch);
+}
+
+// Fatal error
+static m3ApiRawFunction (null0_abort) {
+  m3ApiGetArgMem(const char*, message);
+  m3ApiGetArgMem(const char*, fileName);
+  m3ApiGetArg(uint16_t, lineNumber);
+  m3ApiGetArg(uint16_t, columnNumber);
+  fprintf(stderr, "%s at %s:%d:%d\n", message, fileName, lineNumber, columnNumber);
+  m3ApiSuccess();
+}
+
+// Log a string
+static m3ApiRawFunction (null0_log) {
+  m3ApiGetArgMem(const char*, message);
+  printf("%s\n", message);
+  // TraceLog(LOG_DEBUG, "%s\n", message);
+  m3ApiSuccess();
+}
+
+static m3ApiRawFunction (null0_ClearBackground) {
+  m3ApiGetArg(Color, color);
+  ClearBackground(color);
+  m3ApiSuccess();
+}
+
+static m3ApiRawFunction (null0_DrawCircle) {
+  m3ApiGetArg(int, centerX);
+  m3ApiGetArg(int, centerY);
+  m3ApiGetArg(float, radius);
+  m3ApiGetArg(Color, color);
+  ImageDrawCircle(&core->backBuffer, centerX, centerY, radius, color);
+  m3ApiSuccess();
+}
+
+static m3ApiRawFunction (null0_DrawLine) {
+  m3ApiGetArg(int, startPosX);
+  m3ApiGetArg(int, startPosY);
+  m3ApiGetArg(int, endPosX);
+  m3ApiGetArg(int, endPosY);
+  m3ApiGetArg(Color, color);
+  ImageDrawLine(&core->backBuffer, startPosX, startPosY, endPosX, endPosY, color);
+  m3ApiSuccess();
+}
+
+static m3ApiRawFunction (null0_DrawRectangle) {
+  m3ApiGetArg(int, posX);
+  m3ApiGetArg(int, posY);
+  m3ApiGetArg(int, width);
+  m3ApiGetArg(int, height);
+  m3ApiGetArg(Color, color);
+  ImageDrawRectangle(&core->backBuffer, posX, posY, width, height, color);
+  m3ApiSuccess();
+}
+
+bool LoadGame(const void* wasmBuffer, size_t byteLength, const char* path) {
+  TraceLog(LOG_DEBUG, "LoadGame\n");
+
+  // TODO: handle zip-files & directories
+   
+  env = m3_NewEnvironment();
+  runtime = m3_NewRuntime (env, 1024 * 1024, NULL);
+  null0_check_wasm3(m3_ParseModule (env, &module, wasmBuffer, byteLength));
+  null0_check_wasm3(m3_LoadModule(runtime, module));
+
+  // IMPORTS
+  m3_LinkRawFunction(module, "env", "null0_log", "v(*)", &null0_log);
+  m3_LinkRawFunction(module, "env", "abort", "v(**ii)", &null0_abort);
+  m3_LinkRawFunction(module, "env", "ClearBackground", "v(i)", &null0_ClearBackground);
+  m3_LinkRawFunction(module, "env", "DrawCircle", "v(iifi)", &null0_DrawCircle);
+  m3_LinkRawFunction(module, "env", "DrawLine", "v(iiii)", &null0_DrawLine);
+  m3_LinkRawFunction(module, "env", "DrawRectangle", "v(iiii)", &null0_DrawRectangle);
+
+  null0_check_wasm3_is_ok();
+
+  // EXPORTS
+  // __new(size: usize, id: u32): usize should be implemented in non-as wasm
+  m3_FindFunction(&as_new, runtime, "__new");
+  if (!as_new) {
+    TraceLog(LOG_FATAL,"__new not exported.\n");
+    exit(1);
+  }
+
+  m3_FindFunction(&cart_load, runtime, "load");
+  m3_FindFunction(&cart_update, runtime, "update");
+
+  if (cart_load) {
+    null0_check_wasm3(m3_CallV(cart_load));
+  }
+
+  if (!cart_update) {
+    printf("no update.\n");
+  }
+
+   return true;
+}
+
+void UnloadGame() {
+   if (!IsCoreReady()) {
+      return;
+   }
+   TraceLog(LOG_DEBUG, "UnloadGame\n");
+
+   // Unload the game
 }
 
 bool retro_load_game(const struct retro_game_info *info) {
-   struct retro_input_descriptor desc[] = {
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "Left" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "Up" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "Down" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
-      { 0 },
-   };
-
-   environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
-
-   enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
+   if (!IsCoreReady()) {
+      return false;
+   }
+   // The pixel format is the same as the front buffer.
+   enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt)) {
-      log_cb(RETRO_LOG_INFO, "XRGB8888 is not supported.\n");
+      TraceLog(LOG_ERROR, "RGB565 isn't supported\n");
       return false;
    }
 
-   snprintf(retro_game_path, sizeof(retro_game_path), "%s", info->path);
-   struct retro_audio_callback audio_cb = { audio_callback, audio_set_state };
-   use_audio_cb = environ_cb(RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK, &audio_cb);
-
    check_variables();
 
-   (void)info;
-   return null0_run(retro_game_path);
+   if (info) {
+      return LoadGame(info->data, info->size, info->path);
+   }
+   else {
+      return LoadGame(NULL, 0, "");
+   }
 }
 
-void retro_unload_game(void) {}
+void retro_unload_game(void) {
+   UnloadGame();
+}
 
 unsigned retro_get_region(void) {
    return RETRO_REGION_NTSC;

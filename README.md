@@ -19,5 +19,5 @@ npm run build:http
 npm test build/justlog.wasm
 
 # run on mac
-/Applications/RetroArch.app/Contents/MacOS/RetroArch -L build/null0_libretro.dylib build/justlog.null0
+/Applications/RetroArch.app/Contents/MacOS/RetroArch -L build/null0-libretro.dylib build/justlog.null0
 ```
