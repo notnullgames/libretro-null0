@@ -17,51 +17,43 @@ export function http_get(url: string): string {
 }
 
 @external("env", "null0_ClearBackground")
-export declare function ClearBackground(color: u32): void
+export declare function ClearBackground(color: i32): void
 
 @external("env", "null0_DrawCircle")
-export declare function DrawCircle(centerX: u32, centerY: u32, radius: f32, color: u32): void
+export declare function DrawCircle(centerX: i32, centerY: i32, radius: f32, color: i32): void
 
 @external("env", "null0_DrawLine")
-export declare function DrawLine(startPosX: u32, startPosY: u32, endPosX: u32, endPosY: u32, color: u32): void
+export declare function DrawLine(startPosX: i32, startPosY: i32, endPosX: i32, endPosY: i32, color: i32): void
 
 @external("env", "null0_DrawRectangle")
-export declare function DrawRectangle(posX: u32, posY: u32, width: u32, height: u32, color: u32): void
+export declare function DrawRectangle(posX: i32, posY: i32, width: i32, height: i32, color: i32): void
 
-export function rgb(r: u8, g: u8, b: u8): u32 {
-  return rgba(r, g, b, 0xFF)
-}
-
-export function rgba(r: u8, g: u8, b: u8, a: u8): u32 {
-  return (r << 24) + (g << 16) + (b << 8) + (a)
-}
-
-export const LIGHTGRAY = rgb( 200, 200, 200 )
-export const GRAY      = rgb( 130, 130, 130 )
-export const DARKGRAY  = rgb( 80,  80,  80  )
-export const LIGHTGREY = rgb( 200, 200, 200 )
-export const GREY      = rgb( 130, 130, 130 )
-export const DARKGREY  = rgb( 80,  80,  80  )
-export const YELLOW    = rgb( 253, 249, 0   )
-export const GOLD      = rgb( 255, 203, 0   )
-export const ORANGE    = rgb( 255, 161, 0   )
-export const PINK      = rgb( 255, 109, 194 )
-export const RED       = rgb( 230, 41,  55  )
-export const MAROON    = rgb( 190, 33,  55  )
-export const GREEN     = rgb( 0,   228, 48  )
-export const LIME      = rgb( 0,   158, 47  )
-export const DARKGREEN = rgb( 0,   117, 44  )
-export const SKYBLUE   = rgb( 102, 191, 255 )
-export const BLUE      = rgb( 0,   121, 241 )
-export const DARKBLUE  = rgb( 0,   82,  172 )
-export const PURPLE    = rgb( 200, 122, 255 )
-export const VIOLET    = rgb( 135, 60,  190 )
-export const DARKPURPL = rgb( 112, 31,  126 )
-export const BEIGE     = rgb( 211, 176, 131 )
-export const BROWN     = rgb( 127, 106, 79  )
-export const DARKBROWN = rgb( 76,  63,  47  )
-export const WHITE     = rgb( 255, 255, 255 )
-export const BLACK     = rgb( 0,   0,   0   )
-export const BLANK     = rgba(  0, 0, 0, 0  )
-export const MAGENTA   = rgb( 255, 0,   255 )
-export const RAYWHITE  = rgb( 245, 245, 245 )
+export const LIGHTGRAY = 0xC8C8C8FF
+export const LIGHTGREY = LIGHTGRAY
+export const GRAY      = 0x828282FF
+export const GREY      = GRAY
+export const DARKGRAY  = 0x505050FF
+export const DARKGREY  = DARKGRAY
+export const WHITE     = 0xFFFFFFFF
+export const BLACK     = 0x000000FF
+export const BLANK     = 0x00000000
+export const BEIGE = 0xd3b083FF
+export const BLUE = 0x0079f1FF
+export const BROWN = 0x7f6a4fFF
+export const DARKBLUE = 0x0052acFF
+export const DARKBROWN = 0x4c3f2fFF
+export const DARKGREEN = 0x00752cFF
+export const GREEN     = 0x00E430FF
+export const DARKPURPL = 0x701f7eFF
+export const GOLD = 0xffcb00FF
+export const LIME = 0x009e2fFF
+export const MAGENTA = 0xff00ffFF
+export const MAROON = 0xbe2137FF
+export const ORANGE = 0xffa100FF
+export const PINK = 0xff6dc2FF
+export const PURPLE = 0xc87affFF
+export const RAYWHITE = 0xf5f5f5FF
+export const RED = 0xe62937FF
+export const SKYBLUE = 0x66bfffFF
+export const VIOLET = 0x873cbeFF
+export const YELLOW = 0xfdf900FF

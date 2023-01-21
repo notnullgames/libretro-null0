@@ -260,10 +260,6 @@ static void audio_set_state(bool enable) {
    (void)enable;
 }
 
-void ClearBackground(Color color) {
-   ImageClearBackground(&core->backBuffer, color);
-}
-
 void UpdateGame() {
    if (!IsCoreReady()) {
       return;
@@ -273,7 +269,6 @@ void UpdateGame() {
     null0_check_wasm3(m3_CallV(cart_update));
    } else {
     // TODO: some cute embedded "no update" screen here
-    printf("no update\n");
    }
 }
 
@@ -316,8 +311,8 @@ static m3ApiRawFunction (null0_log) {
 }
 
 static m3ApiRawFunction (null0_ClearBackground) {
-  m3ApiGetArg(Color, color);
-  ClearBackground(color);
+  m3ApiGetArg(int, color);
+  ImageClearBackground(&core->backBuffer, GetColor(color));
   m3ApiSuccess();
 }
 
@@ -325,8 +320,8 @@ static m3ApiRawFunction (null0_DrawCircle) {
   m3ApiGetArg(int, centerX);
   m3ApiGetArg(int, centerY);
   m3ApiGetArg(float, radius);
-  m3ApiGetArg(Color, color);
-  ImageDrawCircle(&core->backBuffer, centerX, centerY, radius, color);
+  m3ApiGetArg(int, color);
+  ImageDrawCircle(&core->backBuffer, centerX, centerY, radius, GetColor(color));
   m3ApiSuccess();
 }
 
@@ -335,18 +330,18 @@ static m3ApiRawFunction (null0_DrawLine) {
   m3ApiGetArg(int, startPosY);
   m3ApiGetArg(int, endPosX);
   m3ApiGetArg(int, endPosY);
-  m3ApiGetArg(Color, color);
-  ImageDrawLine(&core->backBuffer, startPosX, startPosY, endPosX, endPosY, color);
+  m3ApiGetArg(int, color);
+  ImageDrawLine(&core->backBuffer, startPosX, startPosY, endPosX, endPosY, GetColor(color));
   m3ApiSuccess();
 }
 
 static m3ApiRawFunction (null0_DrawRectangle) {
-  m3ApiGetArg(int, posX);
-  m3ApiGetArg(int, posY);
-  m3ApiGetArg(int, width);
-  m3ApiGetArg(int, height);
-  m3ApiGetArg(Color, color);
-  ImageDrawRectangle(&core->backBuffer, posX, posY, width, height, color);
+  m3ApiGetArg(int32_t, posX);
+  m3ApiGetArg(int32_t, posY);
+  m3ApiGetArg(int32_t, width);
+  m3ApiGetArg(int32_t, height);
+  m3ApiGetArg(int32_t, color);
+  ImageDrawRectangle(&core->backBuffer, posX, posY, width, height, GetColor(color));
   m3ApiSuccess();
 }
 
@@ -361,12 +356,12 @@ bool LoadGame(const void* wasmBuffer, size_t byteLength, const char* path) {
   null0_check_wasm3(m3_LoadModule(runtime, module));
 
   // IMPORTS
-  m3_LinkRawFunction(module, "env", "null0_log", "v(*)", &null0_log);
   m3_LinkRawFunction(module, "env", "abort", "v(**ii)", &null0_abort);
-  m3_LinkRawFunction(module, "env", "ClearBackground", "v(i)", &null0_ClearBackground);
-  m3_LinkRawFunction(module, "env", "DrawCircle", "v(iifi)", &null0_DrawCircle);
-  m3_LinkRawFunction(module, "env", "DrawLine", "v(iiii)", &null0_DrawLine);
-  m3_LinkRawFunction(module, "env", "DrawRectangle", "v(iiii)", &null0_DrawRectangle);
+  m3_LinkRawFunction(module, "env", "null0_log", "v(*)", &null0_log);
+  m3_LinkRawFunction(module, "env", "null0_ClearBackground", "v(i)", &null0_ClearBackground);
+  m3_LinkRawFunction(module, "env", "null0_DrawCircle", "v(iifi)", &null0_DrawCircle);
+  m3_LinkRawFunction(module, "env", "null0_DrawLine", "v(iiiii)", &null0_DrawLine);
+  m3_LinkRawFunction(module, "env", "null0_DrawRectangle", "v(iiiii)", &null0_DrawRectangle);
 
   null0_check_wasm3_is_ok();
 
