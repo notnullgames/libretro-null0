@@ -1,6 +1,6 @@
 // this will generate the assemblyscript header
 
-import funcs from './rimage.json' assert { type: 'json' }
+import funcs from './api.json' assert { type: 'json' }
 
 // use as filter to not output some functions
 const noFilter = ({name}) => ![

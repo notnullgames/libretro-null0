@@ -1,4 +1,4 @@
-// null0 assemblyscript header, generated 2023-01-22T03:04:40.169Z
+// null0 assemblyscript header, generated 2023-01-22T03:07:12.018Z
 
 @unmanaged
 export class Color {
