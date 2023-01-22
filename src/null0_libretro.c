@@ -316,17 +316,17 @@ static m3ApiRawFunction (null0_log) {
 }
 
 static m3ApiRawFunction (null0_ClearBackground) {
-  m3ApiGetArg(int, color);
-  ImageClearBackground(&core->backBuffer, GetColor(color));
+  m3ApiGetArgMem(Color*, color);
+  ImageClearBackground(&core->backBuffer, *color);
   m3ApiSuccess();
 }
 
 static m3ApiRawFunction (null0_DrawCircle) {
   m3ApiGetArg(int, centerX);
   m3ApiGetArg(int, centerY);
-  m3ApiGetArg(float, radius);
-  m3ApiGetArg(int, color);
-  ImageDrawCircle(&core->backBuffer, centerX, centerY, radius, GetColor(color));
+  m3ApiGetArg(int, radius);
+  m3ApiGetArgMem(Color*, color);
+  ImageDrawCircle(&core->backBuffer, centerX, centerY, radius, *color);
   m3ApiSuccess();
 }
 
@@ -335,8 +335,8 @@ static m3ApiRawFunction (null0_DrawLine) {
   m3ApiGetArg(int, startPosY);
   m3ApiGetArg(int, endPosX);
   m3ApiGetArg(int, endPosY);
-  m3ApiGetArg(int, color);
-  ImageDrawLine(&core->backBuffer, startPosX, startPosY, endPosX, endPosY, GetColor(color));
+  m3ApiGetArgMem(Color*, color);
+  ImageDrawLine(&core->backBuffer, startPosX, startPosY, endPosX, endPosY, *color);
   m3ApiSuccess();
 }
 
@@ -345,8 +345,8 @@ static m3ApiRawFunction (null0_DrawRectangle) {
   m3ApiGetArg(int32_t, posY);
   m3ApiGetArg(int32_t, width);
   m3ApiGetArg(int32_t, height);
-  m3ApiGetArg(int32_t, color);
-  ImageDrawRectangle(&core->backBuffer, posX, posY, width, height, GetColor(color));
+  m3ApiGetArgMem(Color*, color);
+  ImageDrawRectangle(&core->backBuffer, posX, posY, width, height, *color);
   m3ApiSuccess();
 }
 
@@ -365,7 +365,7 @@ bool LoadGame(const void* wasmBuffer, size_t byteLength, const char* path) {
   m3_LinkRawFunction(module, "env", "abort", "v(**ii)", &null0_abort);
   m3_LinkRawFunction(module, "env", "null0_log", "v(*)", &null0_log);
   m3_LinkRawFunction(module, "env", "null0_ClearBackground", "v(i)", &null0_ClearBackground);
-  m3_LinkRawFunction(module, "env", "null0_DrawCircle", "v(iifi)", &null0_DrawCircle);
+  m3_LinkRawFunction(module, "env", "null0_DrawCircle", "v(iiii)", &null0_DrawCircle);
   m3_LinkRawFunction(module, "env", "null0_DrawLine", "v(iiiii)", &null0_DrawLine);
   m3_LinkRawFunction(module, "env", "null0_DrawRectangle", "v(iiiii)", &null0_DrawRectangle);
 
