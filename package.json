@@ -9,6 +9,7 @@
     "build:draw": "asc --lib src/carts/null0.ts --runtime stub --exportRuntime --optimize --stats src/carts/draw.ts -o build/draw.wasm -t build/draw.wat --bindings esm && cd build && cp draw.wasm main.wasm && zip -r draw.null0 main.wasm && rm main.wasm",
     "gen:json": "node tools/genjson.mjs > tools/api.json",
     "gen:as": "NODE_NO_WARNINGS=1 node tools/genas.mjs > src/carts/null0.ts",
+    "gen:host": "NODE_NO_WARNINGS=1 node tools/genhost.mjs > src/null0_host.h",
     "test": "node src/test.js"
   },
   "devDependencies": {

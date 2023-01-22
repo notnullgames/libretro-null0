@@ -24,6 +24,11 @@ typedef struct Core {
    retro_input_state_t input_state_cb;
 } Core;
 
+retro_environment_t environ_cb;
+Core* core;
+retro_log_printf_t log_cb;
+struct retro_log_callback logging;
+
 static M3Environment* env;
 static M3Runtime* runtime;
 static M3Module* module;
@@ -49,11 +54,6 @@ static void null0_check_wasm3 (M3Result result) {
     null0_check_wasm3_is_ok();
   }
 }
-
-retro_environment_t environ_cb;
-Core* core;
-retro_log_printf_t log_cb;
-struct retro_log_callback logging;
 
 void TraceLogFallback(enum retro_log_level level, const char *fmt, ...) {
    (void)level;
@@ -289,6 +289,7 @@ void retro_run(void) {
    }
 
    UpdateGame();
+   
    // Render the backbuffer to the front buffer.
    Rectangle screenRect = {0, 0, core->frontBuffer.width, core->frontBuffer.height};
    ImageDraw(&core->frontBuffer, core->backBuffer, screenRect, screenRect, WHITE);
