@@ -322,19 +322,19 @@ static m3ApiRawFunction (null0_ClearBackground) {
 }
 
 static m3ApiRawFunction (null0_DrawCircle) {
-  m3ApiGetArg(int, centerX);
-  m3ApiGetArg(int, centerY);
-  m3ApiGetArg(int, radius);
+  m3ApiGetArg(int32_t, centerX);
+  m3ApiGetArg(int32_t, centerY);
+  m3ApiGetArg(int32_t, radius);
   m3ApiGetArgMem(Color*, color);
   ImageDrawCircle(&core->backBuffer, centerX, centerY, radius, *color);
   m3ApiSuccess();
 }
 
 static m3ApiRawFunction (null0_DrawLine) {
-  m3ApiGetArg(int, startPosX);
-  m3ApiGetArg(int, startPosY);
-  m3ApiGetArg(int, endPosX);
-  m3ApiGetArg(int, endPosY);
+  m3ApiGetArg(int32_t, startPosX);
+  m3ApiGetArg(int32_t, startPosY);
+  m3ApiGetArg(int32_t, endPosX);
+  m3ApiGetArg(int32_t, endPosY);
   m3ApiGetArgMem(Color*, color);
   ImageDrawLine(&core->backBuffer, startPosX, startPosY, endPosX, endPosY, *color);
   m3ApiSuccess();
