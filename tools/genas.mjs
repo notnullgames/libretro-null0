@@ -3,7 +3,17 @@
 import funcs from './rimage.json' assert { type: 'json' }
 
 // use as filter to not output some functions
-const noFilter = ({name}) => !['GetPixelColor', 'SetPixelColor', 'LoadImageRaw', 'LoadImageFromMemory', 'ExportImageAsCode', 'UnloadImageColors', 'UnloadImagePalette', 'LoadImageColors','LoadImagePalette'].includes(name)
+const noFilter = ({name}) => ![
+  'GetPixelColor',
+  'SetPixelColor',
+  'LoadImageRaw',
+  'LoadImageFromMemory',
+  'ExportImageAsCode',
+  'UnloadImageColors',
+  'UnloadImagePalette',
+  'LoadImageColors',
+  'LoadImagePalette'
+].includes(name)
 
 // map params to as-types
 function getParams(params = []) {
