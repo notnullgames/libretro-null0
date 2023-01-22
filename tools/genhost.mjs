@@ -1,4 +1,5 @@
 // this will generate the C host-header
+// WARNING this is not complete, use it as a base!
 
 // TODO: more checks with m3ApiCheckMem
 // TODO: look into 
@@ -11,6 +12,7 @@ const noFilter = ({name}) => ![
   'SetPixelColor',
   'LoadImageRaw',
   'LoadImageFromMemory',
+  'LoadImageFromScreen',
   'ExportImageAsCode',
   'UnloadImageColors',
   'UnloadImagePalette',
@@ -18,14 +20,6 @@ const noFilter = ({name}) => ![
   'LoadImagePalette',
   'log'
 ].includes(name)
-
-// these are structs that are passed by val, so they need pointer-handling
-const structVals = [
-  'Image',
-  'Color',
-  'Vector2',
-  'Vector3'
-]
 
 // generate a single arg-handler
 function genArgHandler(arg) {
@@ -36,7 +30,7 @@ function genArgHandler(arg) {
   if (arg[0].includes('*')) {
     return `m3ApiGetArgMem(${arg[0]}, ${arg[1]});`
   } else {
-    return `m3ApiGetArg(${arg[0]}, ${arg[1]});`
+    return `m3ApiGetArg(${argTypeMap[arg[0]] || arg[0]}, ${arg[1]});`
   }
 }
 
@@ -48,7 +42,13 @@ function genArgMassager(arg) {
 // return the mapped type
 const returnTypeMap = {
   'int': 'uint32_t',
-  'float': 'float32_t'
+  'float': 'float'
+}
+
+// mapped argument types
+const argTypeMap = {
+  'int': 'uint32_t',
+  'float': 'float'
 }
 
 // the import-defs for your functions
@@ -56,7 +56,7 @@ function getImports() {
   return funcs.filter(noFilter).map(func => {
     return `// ${func.comment}
 static m3ApiRawFunction (null0_${func.name}) {
-  ${func.returns && func.returns !== 'void' ? (`m3ApiReturnType (${returnTypeMap[func.returns] || func.returns });`): ''}
+  ${func.returns && func.returns !== 'void' ? (`m3ApiReturnType (${returnTypeMap[func.returns] || func.returns }); // ${func.returns}`): ''}
   ${func.params.map(genArgHandler).join('\n  ')}
   ${func.returns && func.returns !== 'void' ? (
     `m3ApiReturn(${func.name}(${func.params.map(genArgMassager).join(', ')}));`
@@ -86,8 +86,9 @@ let out = `// null0 host C header, generated ${(new Date()).toISOString()}
 #include "m3_env.h"
 #include "physfs.h"
 
-#define RIMAGE_IMPLEMENTATION
-#include "rimage.h"
+// put these in the file that imports this
+// #define RIMAGE_IMPLEMENTATION
+// #include "rimage.h"
 
 static M3Environment* env;
 static M3Runtime* runtime;
