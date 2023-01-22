@@ -7,6 +7,6 @@ export function load(): void {
 export function update(dt: i32): void {
   ClearBackground(SKYBLUE)
   DrawCircle(200 , 150, 30, RED)
-  DrawRectangle(400, 200, 100, 140, GREEN)
-  DrawLine(50, 300, 550, 380, ORANGE)
+  DrawRectangle(10, 20, 100, 140, GREEN)
+  DrawLine(0, 30, 200, 200, ORANGE)
 }

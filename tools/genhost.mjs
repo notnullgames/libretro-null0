@@ -2,7 +2,7 @@
 // WARNING this is not complete, use it as a base!
 
 // TODO: more checks with m3ApiCheckMem
-// TODO: look into 
+// TODO: look into more wams3 macros. there are a bunch, and some seem useful
 
 import funcs from './api.json' assert { type: 'json' }
 
@@ -86,9 +86,13 @@ let out = `// null0 host C header, generated ${(new Date()).toISOString()}
 #include "m3_env.h"
 #include "physfs.h"
 
-// put these in the file that imports this
-// #define RIMAGE_IMPLEMENTATION
-// #include "rimage.h"
+// https://github.com/Mashpoe/c-vector
+#define VEC_IMPLEMENTATION
+#include "vec.h"
+
+// https://github.com/RobLoach/rimage
+#define RIMAGE_IMPLEMENTATION
+#include "rimage.h"
 
 static M3Environment* env;
 static M3Runtime* runtime;
@@ -141,7 +145,7 @@ static m3ApiRawFunction (null0_log) {
 ${getImports().join('\n')}
 
 // call this in your game-loop
-void null0_update_loop() {
+void null0_update() {
   gettimeofday(&now, NULL);
   if (cart_update) {
     null0_check_wasm3(m3_CallV(cart_update, (now.tv_sec - start.tv_sec) * 1000000 + now.tv_usec - start.tv_usec));
