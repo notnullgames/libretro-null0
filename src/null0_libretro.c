@@ -210,9 +210,7 @@ bool LoadGame(const void* data, size_t size, const char* path) {
   }
 
   // Load the game.
-  null0_load(&core->backBuffer, data, size, path);
-
-  return true;
+  return null0_load(&core->backBuffer, data, size, path);
 }
 
 void UnloadGame() {
@@ -221,6 +219,7 @@ void UnloadGame() {
   }
 
   // Unload the game
+  null_unload();
 }
 
 bool retro_load_game(const struct retro_game_info* info) {
