@@ -108,21 +108,6 @@
     "comment": "Export image data to file, returns true on success"
   },
   {
-    "returns": "bool",
-    "name": "ExportImageAsCode",
-    "params": [
-      [
-        "Image",
-        "image"
-      ],
-      [
-        "const char*",
-        "fileName"
-      ]
-    ],
-    "comment": "Export image as code file defining an array of bytes, returns true on success"
-  },
-  {
     "returns": "Image",
     "name": "GenImageColor",
     "params": [
@@ -312,6 +297,25 @@
   },
   {
     "returns": "Image",
+    "name": "GenImageText",
+    "params": [
+      [
+        "int",
+        "width"
+      ],
+      [
+        "int",
+        "height"
+      ],
+      [
+        "const char*",
+        "text"
+      ]
+    ],
+    "comment": "Generate image: grayscale image from text data"
+  },
+  {
+    "returns": "Image",
     "name": "ImageCopy",
     "params": [
       [
@@ -459,6 +463,21 @@
       ]
     ],
     "comment": "Premultiply alpha channel"
+  },
+  {
+    "returns": "void",
+    "name": "ImageBlurGaussian",
+    "params": [
+      [
+        "Image*",
+        "image"
+      ],
+      [
+        "int",
+        "blurSize"
+      ]
+    ],
+    "comment": "Apply Gaussian blur using a box blur approximation"
   },
   {
     "returns": "void",
@@ -931,6 +950,56 @@
   },
   {
     "returns": "void",
+    "name": "ImageDrawCircleLines",
+    "params": [
+      [
+        "Image*",
+        "dst"
+      ],
+      [
+        "int",
+        "centerX"
+      ],
+      [
+        "int",
+        "centerY"
+      ],
+      [
+        "int",
+        "radius"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Draw circle outline within an image"
+  },
+  {
+    "returns": "void",
+    "name": "ImageDrawCircleLinesV",
+    "params": [
+      [
+        "Image*",
+        "dst"
+      ],
+      [
+        "Vector2",
+        "center"
+      ],
+      [
+        "int",
+        "radius"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Draw circle outline within an image (Vector version)"
+  },
+  {
+    "returns": "void",
     "name": "ImageDrawRectangle",
     "params": [
       [
@@ -1163,6 +1232,51 @@
   },
   {
     "returns": "Color",
+    "name": "ColorTint",
+    "params": [
+      [
+        "Color",
+        "color"
+      ],
+      [
+        "Color",
+        "tint"
+      ]
+    ],
+    "comment": "Get color multiplied with another color"
+  },
+  {
+    "returns": "Color",
+    "name": "ColorBrightness",
+    "params": [
+      [
+        "Color",
+        "color"
+      ],
+      [
+        "float",
+        "factor"
+      ]
+    ],
+    "comment": "Get color with brightness correction, brightness factor goes from -1.0f to 1.0f"
+  },
+  {
+    "returns": "Color",
+    "name": "ColorContrast",
+    "params": [
+      [
+        "Color",
+        "color"
+      ],
+      [
+        "float",
+        "contrast"
+      ]
+    ],
+    "comment": "Get color with contrast correction, contrast values between -1.0f and 1.0f"
+  },
+  {
+    "returns": "Color",
     "name": "ColorAlpha",
     "params": [
       [
@@ -1258,5 +1372,16 @@
       ]
     ],
     "comment": "Get pixel data size in bytes for certain format"
+  },
+  {
+    "name": "null0_log",
+    "returns": "void",
+    "params": [
+      [
+        "const char*",
+        "text"
+      ]
+    ],
+    "comment": "log a string"
   }
 ]

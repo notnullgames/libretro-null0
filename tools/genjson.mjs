@@ -43,5 +43,14 @@ while ((m = regex.exec(str)) !== null) {
   out.push(rec)
 }
 
+out.push({
+  name: 'null0_log',
+  returns: 'void',
+  params: [
+    ['const char*', 'text']
+  ],
+  comment: 'log a string'
+})
+
 console.log(JSON.stringify(out, null, 2))
 
