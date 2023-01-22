@@ -44,7 +44,7 @@ while ((m = regex.exec(str)) !== null) {
 }
 
 out.push({
-  name: 'null0_log',
+  name: 'log',
   returns: 'void',
   params: [
     ['const char*', 'text']
