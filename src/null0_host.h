@@ -93,6 +93,7 @@ bool null0_start(const void* wasmBuffer, size_t byteLength) {
 
   if (!cart_update) {
     printf("no update.\n");
+    // do load of any assets for "no update" screen here
   }
   return true;
 }
