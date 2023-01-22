@@ -1,4 +1,4 @@
-// null0 host C header, generated 2023-01-22T05:06:25.552Z
+// null0 host C header, generated 2023-01-22T19:13:34.624Z
 
 #include <sys/time.h>
 
@@ -6,8 +6,9 @@
 #include "m3_env.h"
 #include "physfs.h"
 
-#define RIMAGE_IMPLEMENTATION
-#include "rimage.h"
+// put these in the file that imports this
+// #define RIMAGE_IMPLEMENTATION
+// #include "rimage.h"
 
 static M3Environment* env;
 static M3Runtime* runtime;
@@ -59,7 +60,7 @@ static m3ApiRawFunction (null0_log) {
 
 // Load image from file into CPU memory (RAM)
 static m3ApiRawFunction (null0_LoadImage) {
-  m3ApiReturnType (Image);
+  m3ApiReturnType (Image); // Image
   m3ApiGetArgMem(const char*, fileName);
   m3ApiReturn(LoadImage(fileName));
   
@@ -67,18 +68,10 @@ static m3ApiRawFunction (null0_LoadImage) {
 
 // Load image sequence from file (frames appended to image.data)
 static m3ApiRawFunction (null0_LoadImageAnim) {
-  m3ApiReturnType (Image);
+  m3ApiReturnType (Image); // Image
   m3ApiGetArgMem(const char*, fileName);
   m3ApiGetArgMem(int*, frames);
   m3ApiReturn(LoadImageAnim(fileName, frames));
-  
-}
-
-// Load image from screen buffer and (screenshot)
-static m3ApiRawFunction (null0_LoadImageFromScreen) {
-  m3ApiReturnType (Image);
-  
-  m3ApiReturn(LoadImageFromScreen());
   
 }
 
@@ -93,7 +86,7 @@ static m3ApiRawFunction (null0_UnloadImage) {
 
 // Export image data to file, returns true on success
 static m3ApiRawFunction (null0_ExportImage) {
-  m3ApiReturnType (bool);
+  m3ApiReturnType (bool); // bool
   m3ApiGetArg(Image, image);
   m3ApiGetArgMem(const char*, fileName);
   m3ApiReturn(ExportImage(image, fileName));
@@ -102,9 +95,9 @@ static m3ApiRawFunction (null0_ExportImage) {
 
 // Generate image: plain color
 static m3ApiRawFunction (null0_GenImageColor) {
-  m3ApiReturnType (Image);
-  m3ApiGetArg(int, width);
-  m3ApiGetArg(int, height);
+  m3ApiReturnType (Image); // Image
+  m3ApiGetArg(uint32_t, width);
+  m3ApiGetArg(uint32_t, height);
   m3ApiGetArg(Color, color);
   m3ApiReturn(GenImageColor(width, height, color));
   
@@ -112,9 +105,9 @@ static m3ApiRawFunction (null0_GenImageColor) {
 
 // Generate image: vertical gradient
 static m3ApiRawFunction (null0_GenImageGradientV) {
-  m3ApiReturnType (Image);
-  m3ApiGetArg(int, width);
-  m3ApiGetArg(int, height);
+  m3ApiReturnType (Image); // Image
+  m3ApiGetArg(uint32_t, width);
+  m3ApiGetArg(uint32_t, height);
   m3ApiGetArg(Color, top);
   m3ApiGetArg(Color, bottom);
   m3ApiReturn(GenImageGradientV(width, height, top, bottom));
@@ -123,9 +116,9 @@ static m3ApiRawFunction (null0_GenImageGradientV) {
 
 // Generate image: horizontal gradient
 static m3ApiRawFunction (null0_GenImageGradientH) {
-  m3ApiReturnType (Image);
-  m3ApiGetArg(int, width);
-  m3ApiGetArg(int, height);
+  m3ApiReturnType (Image); // Image
+  m3ApiGetArg(uint32_t, width);
+  m3ApiGetArg(uint32_t, height);
   m3ApiGetArg(Color, left);
   m3ApiGetArg(Color, right);
   m3ApiReturn(GenImageGradientH(width, height, left, right));
@@ -134,9 +127,9 @@ static m3ApiRawFunction (null0_GenImageGradientH) {
 
 // Generate image: radial gradient
 static m3ApiRawFunction (null0_GenImageGradientRadial) {
-  m3ApiReturnType (Image);
-  m3ApiGetArg(int, width);
-  m3ApiGetArg(int, height);
+  m3ApiReturnType (Image); // Image
+  m3ApiGetArg(uint32_t, width);
+  m3ApiGetArg(uint32_t, height);
   m3ApiGetArg(float, density);
   m3ApiGetArg(Color, inner);
   m3ApiGetArg(Color, outer);
@@ -146,11 +139,11 @@ static m3ApiRawFunction (null0_GenImageGradientRadial) {
 
 // Generate image: checked
 static m3ApiRawFunction (null0_GenImageChecked) {
-  m3ApiReturnType (Image);
-  m3ApiGetArg(int, width);
-  m3ApiGetArg(int, height);
-  m3ApiGetArg(int, checksX);
-  m3ApiGetArg(int, checksY);
+  m3ApiReturnType (Image); // Image
+  m3ApiGetArg(uint32_t, width);
+  m3ApiGetArg(uint32_t, height);
+  m3ApiGetArg(uint32_t, checksX);
+  m3ApiGetArg(uint32_t, checksY);
   m3ApiGetArg(Color, col1);
   m3ApiGetArg(Color, col2);
   m3ApiReturn(GenImageChecked(width, height, checksX, checksY, col1, col2));
@@ -159,9 +152,9 @@ static m3ApiRawFunction (null0_GenImageChecked) {
 
 // Generate image: white noise
 static m3ApiRawFunction (null0_GenImageWhiteNoise) {
-  m3ApiReturnType (Image);
-  m3ApiGetArg(int, width);
-  m3ApiGetArg(int, height);
+  m3ApiReturnType (Image); // Image
+  m3ApiGetArg(uint32_t, width);
+  m3ApiGetArg(uint32_t, height);
   m3ApiGetArg(float, factor);
   m3ApiReturn(GenImageWhiteNoise(width, height, factor));
   
@@ -169,11 +162,11 @@ static m3ApiRawFunction (null0_GenImageWhiteNoise) {
 
 // Generate image: perlin noise
 static m3ApiRawFunction (null0_GenImagePerlinNoise) {
-  m3ApiReturnType (Image);
-  m3ApiGetArg(int, width);
-  m3ApiGetArg(int, height);
-  m3ApiGetArg(int, offsetX);
-  m3ApiGetArg(int, offsetY);
+  m3ApiReturnType (Image); // Image
+  m3ApiGetArg(uint32_t, width);
+  m3ApiGetArg(uint32_t, height);
+  m3ApiGetArg(uint32_t, offsetX);
+  m3ApiGetArg(uint32_t, offsetY);
   m3ApiGetArg(float, scale);
   m3ApiReturn(GenImagePerlinNoise(width, height, offsetX, offsetY, scale));
   
@@ -181,19 +174,19 @@ static m3ApiRawFunction (null0_GenImagePerlinNoise) {
 
 // Generate image: cellular algorithm, bigger tileSize means bigger cells
 static m3ApiRawFunction (null0_GenImageCellular) {
-  m3ApiReturnType (Image);
-  m3ApiGetArg(int, width);
-  m3ApiGetArg(int, height);
-  m3ApiGetArg(int, tileSize);
+  m3ApiReturnType (Image); // Image
+  m3ApiGetArg(uint32_t, width);
+  m3ApiGetArg(uint32_t, height);
+  m3ApiGetArg(uint32_t, tileSize);
   m3ApiReturn(GenImageCellular(width, height, tileSize));
   
 }
 
 // Generate image: grayscale image from text data
 static m3ApiRawFunction (null0_GenImageText) {
-  m3ApiReturnType (Image);
-  m3ApiGetArg(int, width);
-  m3ApiGetArg(int, height);
+  m3ApiReturnType (Image); // Image
+  m3ApiGetArg(uint32_t, width);
+  m3ApiGetArg(uint32_t, height);
   m3ApiGetArgMem(const char*, text);
   m3ApiReturn(GenImageText(width, height, text));
   
@@ -201,7 +194,7 @@ static m3ApiRawFunction (null0_GenImageText) {
 
 // Create an image duplicate (useful for transformations)
 static m3ApiRawFunction (null0_ImageCopy) {
-  m3ApiReturnType (Image);
+  m3ApiReturnType (Image); // Image
   m3ApiGetArg(Image, image);
   m3ApiReturn(ImageCopy(image));
   
@@ -209,7 +202,7 @@ static m3ApiRawFunction (null0_ImageCopy) {
 
 // Create an image from another image piece
 static m3ApiRawFunction (null0_ImageFromImage) {
-  m3ApiReturnType (Image);
+  m3ApiReturnType (Image); // Image
   m3ApiGetArg(Image, image);
   m3ApiGetArg(Rectangle, rec);
   m3ApiReturn(ImageFromImage(image, rec));
@@ -218,9 +211,9 @@ static m3ApiRawFunction (null0_ImageFromImage) {
 
 // Create an image from text (default font)
 static m3ApiRawFunction (null0_ImageText) {
-  m3ApiReturnType (Image);
+  m3ApiReturnType (Image); // Image
   m3ApiGetArgMem(const char*, text);
-  m3ApiGetArg(int, fontSize);
+  m3ApiGetArg(uint32_t, fontSize);
   m3ApiGetArg(Color, color);
   m3ApiReturn(ImageText(text, fontSize, color));
   
@@ -230,7 +223,7 @@ static m3ApiRawFunction (null0_ImageText) {
 static m3ApiRawFunction (null0_ImageFormat) {
   
   m3ApiGetArgMem(Image*, image);
-  m3ApiGetArg(int, newFormat);
+  m3ApiGetArg(uint32_t, newFormat);
   
   ImageFormat(image, newFormat);
   m3ApiSuccess();
@@ -300,7 +293,7 @@ static m3ApiRawFunction (null0_ImageAlphaPremultiply) {
 static m3ApiRawFunction (null0_ImageBlurGaussian) {
   
   m3ApiGetArgMem(Image*, image);
-  m3ApiGetArg(int, blurSize);
+  m3ApiGetArg(uint32_t, blurSize);
   
   ImageBlurGaussian(image, blurSize);
   m3ApiSuccess();
@@ -310,8 +303,8 @@ static m3ApiRawFunction (null0_ImageBlurGaussian) {
 static m3ApiRawFunction (null0_ImageResize) {
   
   m3ApiGetArgMem(Image*, image);
-  m3ApiGetArg(int, newWidth);
-  m3ApiGetArg(int, newHeight);
+  m3ApiGetArg(uint32_t, newWidth);
+  m3ApiGetArg(uint32_t, newHeight);
   
   ImageResize(image, newWidth, newHeight);
   m3ApiSuccess();
@@ -321,8 +314,8 @@ static m3ApiRawFunction (null0_ImageResize) {
 static m3ApiRawFunction (null0_ImageResizeNN) {
   
   m3ApiGetArgMem(Image*, image);
-  m3ApiGetArg(int, newWidth);
-  m3ApiGetArg(int, newHeight);
+  m3ApiGetArg(uint32_t, newWidth);
+  m3ApiGetArg(uint32_t, newHeight);
   
   ImageResizeNN(image, newWidth, newHeight);
   m3ApiSuccess();
@@ -332,10 +325,10 @@ static m3ApiRawFunction (null0_ImageResizeNN) {
 static m3ApiRawFunction (null0_ImageResizeCanvas) {
   
   m3ApiGetArgMem(Image*, image);
-  m3ApiGetArg(int, newWidth);
-  m3ApiGetArg(int, newHeight);
-  m3ApiGetArg(int, offsetX);
-  m3ApiGetArg(int, offsetY);
+  m3ApiGetArg(uint32_t, newWidth);
+  m3ApiGetArg(uint32_t, newHeight);
+  m3ApiGetArg(uint32_t, offsetX);
+  m3ApiGetArg(uint32_t, offsetY);
   m3ApiGetArg(Color, fill);
   
   ImageResizeCanvas(image, newWidth, newHeight, offsetX, offsetY, fill);
@@ -355,10 +348,10 @@ static m3ApiRawFunction (null0_ImageMipmaps) {
 static m3ApiRawFunction (null0_ImageDither) {
   
   m3ApiGetArgMem(Image*, image);
-  m3ApiGetArg(int, rBpp);
-  m3ApiGetArg(int, gBpp);
-  m3ApiGetArg(int, bBpp);
-  m3ApiGetArg(int, aBpp);
+  m3ApiGetArg(uint32_t, rBpp);
+  m3ApiGetArg(uint32_t, gBpp);
+  m3ApiGetArg(uint32_t, bBpp);
+  m3ApiGetArg(uint32_t, aBpp);
   
   ImageDither(image, rBpp, gBpp, bBpp, aBpp);
   m3ApiSuccess();
@@ -442,7 +435,7 @@ static m3ApiRawFunction (null0_ImageColorContrast) {
 static m3ApiRawFunction (null0_ImageColorBrightness) {
   
   m3ApiGetArgMem(Image*, image);
-  m3ApiGetArg(int, brightness);
+  m3ApiGetArg(uint32_t, brightness);
   
   ImageColorBrightness(image, brightness);
   m3ApiSuccess();
@@ -461,10 +454,10 @@ static m3ApiRawFunction (null0_ImageColorReplace) {
 
 // Get image pixel color at (x, y) position
 static m3ApiRawFunction (null0_GetImageColor) {
-  m3ApiReturnType (Color);
+  m3ApiReturnType (Color); // Color
   m3ApiGetArg(Image, image);
-  m3ApiGetArg(int, x);
-  m3ApiGetArg(int, y);
+  m3ApiGetArg(uint32_t, x);
+  m3ApiGetArg(uint32_t, y);
   m3ApiReturn(GetImageColor(image, x, y));
   
 }
@@ -483,8 +476,8 @@ static m3ApiRawFunction (null0_ImageClearBackground) {
 static m3ApiRawFunction (null0_ImageDrawPixel) {
   
   m3ApiGetArgMem(Image*, dst);
-  m3ApiGetArg(int, posX);
-  m3ApiGetArg(int, posY);
+  m3ApiGetArg(uint32_t, posX);
+  m3ApiGetArg(uint32_t, posY);
   m3ApiGetArg(Color, color);
   
   ImageDrawPixel(dst, posX, posY, color);
@@ -506,10 +499,10 @@ static m3ApiRawFunction (null0_ImageDrawPixelV) {
 static m3ApiRawFunction (null0_ImageDrawLine) {
   
   m3ApiGetArgMem(Image*, dst);
-  m3ApiGetArg(int, startPosX);
-  m3ApiGetArg(int, startPosY);
-  m3ApiGetArg(int, endPosX);
-  m3ApiGetArg(int, endPosY);
+  m3ApiGetArg(uint32_t, startPosX);
+  m3ApiGetArg(uint32_t, startPosY);
+  m3ApiGetArg(uint32_t, endPosX);
+  m3ApiGetArg(uint32_t, endPosY);
   m3ApiGetArg(Color, color);
   
   ImageDrawLine(dst, startPosX, startPosY, endPosX, endPosY, color);
@@ -532,9 +525,9 @@ static m3ApiRawFunction (null0_ImageDrawLineV) {
 static m3ApiRawFunction (null0_ImageDrawCircle) {
   
   m3ApiGetArgMem(Image*, dst);
-  m3ApiGetArg(int, centerX);
-  m3ApiGetArg(int, centerY);
-  m3ApiGetArg(int, radius);
+  m3ApiGetArg(uint32_t, centerX);
+  m3ApiGetArg(uint32_t, centerY);
+  m3ApiGetArg(uint32_t, radius);
   m3ApiGetArg(Color, color);
   
   ImageDrawCircle(dst, centerX, centerY, radius, color);
@@ -546,7 +539,7 @@ static m3ApiRawFunction (null0_ImageDrawCircleV) {
   
   m3ApiGetArgMem(Image*, dst);
   m3ApiGetArg(Vector2, center);
-  m3ApiGetArg(int, radius);
+  m3ApiGetArg(uint32_t, radius);
   m3ApiGetArg(Color, color);
   
   ImageDrawCircleV(dst, center, radius, color);
@@ -557,9 +550,9 @@ static m3ApiRawFunction (null0_ImageDrawCircleV) {
 static m3ApiRawFunction (null0_ImageDrawCircleLines) {
   
   m3ApiGetArgMem(Image*, dst);
-  m3ApiGetArg(int, centerX);
-  m3ApiGetArg(int, centerY);
-  m3ApiGetArg(int, radius);
+  m3ApiGetArg(uint32_t, centerX);
+  m3ApiGetArg(uint32_t, centerY);
+  m3ApiGetArg(uint32_t, radius);
   m3ApiGetArg(Color, color);
   
   ImageDrawCircleLines(dst, centerX, centerY, radius, color);
@@ -571,7 +564,7 @@ static m3ApiRawFunction (null0_ImageDrawCircleLinesV) {
   
   m3ApiGetArgMem(Image*, dst);
   m3ApiGetArg(Vector2, center);
-  m3ApiGetArg(int, radius);
+  m3ApiGetArg(uint32_t, radius);
   m3ApiGetArg(Color, color);
   
   ImageDrawCircleLinesV(dst, center, radius, color);
@@ -582,10 +575,10 @@ static m3ApiRawFunction (null0_ImageDrawCircleLinesV) {
 static m3ApiRawFunction (null0_ImageDrawRectangle) {
   
   m3ApiGetArgMem(Image*, dst);
-  m3ApiGetArg(int, posX);
-  m3ApiGetArg(int, posY);
-  m3ApiGetArg(int, width);
-  m3ApiGetArg(int, height);
+  m3ApiGetArg(uint32_t, posX);
+  m3ApiGetArg(uint32_t, posY);
+  m3ApiGetArg(uint32_t, width);
+  m3ApiGetArg(uint32_t, height);
   m3ApiGetArg(Color, color);
   
   ImageDrawRectangle(dst, posX, posY, width, height, color);
@@ -620,7 +613,7 @@ static m3ApiRawFunction (null0_ImageDrawRectangleLines) {
   
   m3ApiGetArgMem(Image*, dst);
   m3ApiGetArg(Rectangle, rec);
-  m3ApiGetArg(int, thick);
+  m3ApiGetArg(uint32_t, thick);
   m3ApiGetArg(Color, color);
   
   ImageDrawRectangleLines(dst, rec, thick, color);
@@ -645,9 +638,9 @@ static m3ApiRawFunction (null0_ImageDrawText) {
   
   m3ApiGetArgMem(Image*, dst);
   m3ApiGetArgMem(const char*, text);
-  m3ApiGetArg(int, posX);
-  m3ApiGetArg(int, posY);
-  m3ApiGetArg(int, fontSize);
+  m3ApiGetArg(uint32_t, posX);
+  m3ApiGetArg(uint32_t, posY);
+  m3ApiGetArg(uint32_t, fontSize);
   m3ApiGetArg(Color, color);
   
   ImageDrawText(dst, text, posX, posY, fontSize, color);
@@ -656,7 +649,7 @@ static m3ApiRawFunction (null0_ImageDrawText) {
 
 // Get color with alpha applied, alpha goes from 0.0f to 1.0f
 static m3ApiRawFunction (null0_Fade) {
-  m3ApiReturnType (Color);
+  m3ApiReturnType (Color); // Color
   m3ApiGetArg(Color, color);
   m3ApiGetArg(float, alpha);
   m3ApiReturn(Fade(color, alpha));
@@ -665,7 +658,7 @@ static m3ApiRawFunction (null0_Fade) {
 
 // Get hexadecimal value for a Color
 static m3ApiRawFunction (null0_ColorToInt) {
-  m3ApiReturnType (uint32_t);
+  m3ApiReturnType (uint32_t); // int
   m3ApiGetArg(Color, color);
   m3ApiReturn(ColorToInt(color));
   
@@ -673,7 +666,7 @@ static m3ApiRawFunction (null0_ColorToInt) {
 
 // Get Color normalized as float [0..1]
 static m3ApiRawFunction (null0_ColorNormalize) {
-  m3ApiReturnType (Vector4);
+  m3ApiReturnType (Vector4); // Vector4
   m3ApiGetArg(Color, color);
   m3ApiReturn(ColorNormalize(color));
   
@@ -681,7 +674,7 @@ static m3ApiRawFunction (null0_ColorNormalize) {
 
 // Get Color from normalized values [0..1]
 static m3ApiRawFunction (null0_ColorFromNormalized) {
-  m3ApiReturnType (Color);
+  m3ApiReturnType (Color); // Color
   m3ApiGetArg(Vector4, normalized);
   m3ApiReturn(ColorFromNormalized(normalized));
   
@@ -689,7 +682,7 @@ static m3ApiRawFunction (null0_ColorFromNormalized) {
 
 // Get HSV values for a Color, hue [0..360], saturation/value [0..1]
 static m3ApiRawFunction (null0_ColorToHSV) {
-  m3ApiReturnType (Vector3);
+  m3ApiReturnType (Vector3); // Vector3
   m3ApiGetArg(Color, color);
   m3ApiReturn(ColorToHSV(color));
   
@@ -697,7 +690,7 @@ static m3ApiRawFunction (null0_ColorToHSV) {
 
 // Get a Color from HSV values, hue [0..360], saturation/value [0..1]
 static m3ApiRawFunction (null0_ColorFromHSV) {
-  m3ApiReturnType (Color);
+  m3ApiReturnType (Color); // Color
   m3ApiGetArg(float, hue);
   m3ApiGetArg(float, saturation);
   m3ApiGetArg(float, value);
@@ -707,7 +700,7 @@ static m3ApiRawFunction (null0_ColorFromHSV) {
 
 // Get color multiplied with another color
 static m3ApiRawFunction (null0_ColorTint) {
-  m3ApiReturnType (Color);
+  m3ApiReturnType (Color); // Color
   m3ApiGetArg(Color, color);
   m3ApiGetArg(Color, tint);
   m3ApiReturn(ColorTint(color, tint));
@@ -716,7 +709,7 @@ static m3ApiRawFunction (null0_ColorTint) {
 
 // Get color with brightness correction, brightness factor goes from -1.0f to 1.0f
 static m3ApiRawFunction (null0_ColorBrightness) {
-  m3ApiReturnType (Color);
+  m3ApiReturnType (Color); // Color
   m3ApiGetArg(Color, color);
   m3ApiGetArg(float, factor);
   m3ApiReturn(ColorBrightness(color, factor));
@@ -725,7 +718,7 @@ static m3ApiRawFunction (null0_ColorBrightness) {
 
 // Get color with contrast correction, contrast values between -1.0f and 1.0f
 static m3ApiRawFunction (null0_ColorContrast) {
-  m3ApiReturnType (Color);
+  m3ApiReturnType (Color); // Color
   m3ApiGetArg(Color, color);
   m3ApiGetArg(float, contrast);
   m3ApiReturn(ColorContrast(color, contrast));
@@ -734,7 +727,7 @@ static m3ApiRawFunction (null0_ColorContrast) {
 
 // Get color with alpha applied, alpha goes from 0.0f to 1.0f
 static m3ApiRawFunction (null0_ColorAlpha) {
-  m3ApiReturnType (Color);
+  m3ApiReturnType (Color); // Color
   m3ApiGetArg(Color, color);
   m3ApiGetArg(float, alpha);
   m3ApiReturn(ColorAlpha(color, alpha));
@@ -743,7 +736,7 @@ static m3ApiRawFunction (null0_ColorAlpha) {
 
 // Get src alpha-blended into dst color with tint
 static m3ApiRawFunction (null0_ColorAlphaBlend) {
-  m3ApiReturnType (Color);
+  m3ApiReturnType (Color); // Color
   m3ApiGetArg(Color, dst);
   m3ApiGetArg(Color, src);
   m3ApiGetArg(Color, tint);
@@ -753,7 +746,7 @@ static m3ApiRawFunction (null0_ColorAlphaBlend) {
 
 // Get Color structure from hexadecimal value
 static m3ApiRawFunction (null0_GetColor) {
-  m3ApiReturnType (Color);
+  m3ApiReturnType (Color); // Color
   m3ApiGetArg(unsigned int, hexValue);
   m3ApiReturn(GetColor(hexValue));
   
@@ -761,10 +754,10 @@ static m3ApiRawFunction (null0_GetColor) {
 
 // Get pixel data size in bytes for certain format
 static m3ApiRawFunction (null0_GetPixelDataSize) {
-  m3ApiReturnType (uint32_t);
-  m3ApiGetArg(int, width);
-  m3ApiGetArg(int, height);
-  m3ApiGetArg(int, format);
+  m3ApiReturnType (uint32_t); // int
+  m3ApiGetArg(uint32_t, width);
+  m3ApiGetArg(uint32_t, height);
+  m3ApiGetArg(uint32_t, format);
   m3ApiReturn(GetPixelDataSize(width, height, format));
   
 }
@@ -794,7 +787,6 @@ bool null0_start(const void* wasmBuffer, size_t byteLength) {
   m3_LinkRawFunction(module, "env", "null0_log", "v(*)", &null0_log);
   m3_LinkRawFunction(module, "env", "null0_LoadImage", "i(i)", &null0_LoadImage);
   m3_LinkRawFunction(module, "env", "null0_LoadImageAnim", "i(ii)", &null0_LoadImageAnim);
-  m3_LinkRawFunction(module, "env", "null0_LoadImageFromScreen", "i(i)", &null0_LoadImageFromScreen);
   m3_LinkRawFunction(module, "env", "null0_UnloadImage", "v(i)", &null0_UnloadImage);
   m3_LinkRawFunction(module, "env", "null0_ExportImage", "i(ii)", &null0_ExportImage);
   m3_LinkRawFunction(module, "env", "null0_GenImageColor", "i(iii)", &null0_GenImageColor);
