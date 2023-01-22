@@ -6,7 +6,7 @@ export function load(): void {
 // called per-frame to update screen
 export function update(dt: i32): void {
   ClearBackground(SKYBLUE)
-  DrawCircle(200 , 150, 30.0 + (dt as f32/10000.0) % 20.0, RED)
+  DrawCircle(200 , 150, 30, RED)
   DrawRectangle(400, 200, 100, 140, GREEN)
   DrawLine(50, 300, 550, 380, ORANGE)
 }
