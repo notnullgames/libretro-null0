@@ -1,4 +1,4 @@
-// null0 host C header, generated 2023-01-22T04:08:55.907Z
+// null0 host C header, generated 2023-01-22T04:11:03.002Z
 
 #include "wasm3.h"
 #include "m3_env.h"
