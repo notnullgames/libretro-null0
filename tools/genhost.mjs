@@ -1,24 +1,93 @@
 // this will generate the C host-header
 
+// TODO: more checks with m3ApiCheckMem
+// TODO: look into 
+
 import funcs from './api.json' assert { type: 'json' }
+
+// use as filter to not output some functions
+const noFilter = ({name}) => ![
+  'GetPixelColor',
+  'SetPixelColor',
+  'LoadImageRaw',
+  'LoadImageFromMemory',
+  'ExportImageAsCode',
+  'UnloadImageColors',
+  'UnloadImagePalette',
+  'LoadImageColors',
+  'LoadImagePalette',
+  'log'
+].includes(name)
+
+// these are structs that are passed by val, so they need pointer-handling
+const structVals = [
+  'Image',
+  'Color',
+  'Vector2',
+  'Vector3'
+]
+
+// generate a single arg-handler
+function genArgHandler(arg) {
+  // TODO: handle all the differnt types of args
+  if (!arg[1]) {
+    return ''
+  }
+  if (arg[0].includes('*')) {
+    return `m3ApiGetArgMem(${arg[0]}, ${arg[1]});`
+  } else {
+    return `m3ApiGetArg(${arg[0]}, ${arg[1]});`
+  }
+}
+
+// this will massage the data
+function genArgMassager(arg) {
+  return arg[1]
+}
+
+// return the mapped type
+const returnTypeMap = {
+  'int': 'uint32_t',
+  'float': 'float32_t'
+}
 
 // the import-defs for your functions
 function getImports() {
-  return []
+  return funcs.filter(noFilter).map(func => {
+    return `// ${func.comment}
+static m3ApiRawFunction (null0_${func.name}) {
+  ${func.returns && func.returns !== 'void' ? (`m3ApiReturnType (${returnTypeMap[func.returns] || func.returns });`): ''}
+  ${func.params.map(genArgHandler).join('\n  ')}
+  ${func.returns && func.returns !== 'void' ? (
+    `m3ApiReturn(${func.name}(${func.params.map(genArgMassager).join(', ')}));`
+  ) : ''}
+  ${!func.returns || func.returns === 'void' ? (
+    `${func.name}(${func.params.map(genArgMassager).join(', ')});\n  m3ApiSuccess();`
+  ) : ''}
+}
+`
+  })
 }
 
 // the connector that hooks your imports to WASM
 function getImportsConnector() {
-  return []
+  return funcs.filter(noFilter).map(func => {
+    const o = func.returns && func.returns !== 'void' ? 'i' : 'v'
+    const p = func.params.map(() => 'i').join('')
+    return `m3_LinkRawFunction(module, "env", "null0_${func.name}", "${o}(${p})", &null0_${func.name});`
+  })
 }
 
 let out = `// null0 host C header, generated ${(new Date()).toISOString()}
+
+#include <sys/time.h>
 
 #include "wasm3.h"
 #include "m3_env.h"
 #include "physfs.h"
 
-#include <sys/time.h>
+#define RIMAGE_IMPLEMENTATION
+#include "rimage.h"
 
 static M3Environment* env;
 static M3Runtime* runtime;
@@ -51,13 +120,20 @@ static void null0_check_wasm3 (M3Result result) {
 
 // Fatal error
 // this is an assemblyscript-thing, but you can export one from any language
-// message/filename is WTF-16 encoded
+// message/filename is WTF-16 encoded, which is a bit annoying
 static m3ApiRawFunction (null0_abort) {
   m3ApiGetArgMem(const char*, message);
   m3ApiGetArgMem(const char*, fileName);
   m3ApiGetArg(uint16_t, lineNumber);
   m3ApiGetArg(uint16_t, columnNumber);
   fprintf(stderr, "%s at %s:%d:%d\\n", message, fileName, lineNumber, columnNumber);
+  m3ApiSuccess();
+}
+
+// Log a string
+static m3ApiRawFunction (null0_log) {
+  m3ApiGetArgMem(const char*, message);
+  printf("%s\\n", message);
   m3ApiSuccess();
 }
 
@@ -84,7 +160,8 @@ bool null0_start(const void* wasmBuffer, size_t byteLength) {
 
   // IMPORTS
   m3_LinkRawFunction(module, "env", "abort", "v(**ii)", &null0_abort);
-  ${getImportsConnector().join('\n')}
+  m3_LinkRawFunction(module, "env", "null0_log", "v(*)", &null0_log);
+  ${getImportsConnector().join('\n  ')}
 
   null0_check_wasm3_is_ok();
 
@@ -92,6 +169,8 @@ bool null0_start(const void* wasmBuffer, size_t byteLength) {
   m3_FindFunction(&new_func, runtime, "__new");
   m3_FindFunction(&cart_load, runtime, "load");
   m3_FindFunction(&cart_update, runtime, "update");
+
+  null0_check_wasm3_is_ok();
 
   if (!new_func) {
     // this means no string-returns
