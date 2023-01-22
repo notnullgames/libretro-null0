@@ -138,8 +138,6 @@ export const RAYWHITE: Color  = { r:  245, g: 245, b: 245, a: 0xFF }
 
 ${funcs.filter(noFilter).map(outputFunction).join('\n\n')}
 
-// IMPORT ALIASES
-
 ${screenAliases.map(f => outputAlias(screenAliasesLookup[f])).join('\n\n')}
 
 `

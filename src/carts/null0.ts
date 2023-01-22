@@ -1,4 +1,4 @@
-// null0 assemblyscript header, generated 2023-01-22T01:23:48.560Z
+// null0 assemblyscript header, generated 2023-01-22T01:30:09.404Z
 
 @unmanaged
 export class Color {
@@ -379,8 +379,6 @@ export declare function GetColor(): Color
 @external("env", "null0_GetPixelDataSize")
 export declare function GetPixelDataSize(height: i32, format: i32): i32
 
-
-// IMPORT ALIASES
 
 // Clear image background with given color
 @external("env", "null0_ClearBackground")
