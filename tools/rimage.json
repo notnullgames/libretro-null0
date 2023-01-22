@@ -1374,7 +1374,7 @@
     "comment": "Get pixel data size in bytes for certain format"
   },
   {
-    "name": "null0_log",
+    "name": "log",
     "returns": "void",
     "params": [
       [
