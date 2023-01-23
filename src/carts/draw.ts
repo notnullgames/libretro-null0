@@ -1,6 +1,19 @@
+let image:u32
+
+const sourceSize = new Rectangle()
+sourceSize.x = 0
+sourceSize.y = 0
+sourceSize.height = 221
+sourceSize.width = 221
+
+const destRec = sourceSize
+
+
 // called when the cart is loaded
 export function load(): void {
   log('Hello, from draw load().')
+  image = LoadImage("null0.png")
+  log("image: " + image.toString())
 }
 
 // called per-frame to update screen
@@ -9,4 +22,5 @@ export function update(dt: i32): void {
   DrawCircle(200 , 150, 30, RED)
   DrawRectangle(10, 20, 100, 140, GREEN)
   DrawLine(0, 30, 200, 200, ORANGE)
+  Draw(image, sourceSize, destRec, WHITE)
 }

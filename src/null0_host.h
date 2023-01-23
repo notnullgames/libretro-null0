@@ -16,6 +16,26 @@
 #define VEC_IMPLEMENTATION
 #include "vec.h"
 
+// #define SUPPORT_MODULE_RTEXTURES
+#define SUPPORT_FILEFORMAT_BMP
+#define SUPPORT_FILEFORMAT_PNG
+#define SUPPORT_FILEFORMAT_TGA
+#define SUPPORT_FILEFORMAT_JPG
+#define SUPPORT_FILEFORMAT_GIF
+// #define SUPPORT_FILEFORMAT_QOI
+// #define SUPPORT_FILEFORMAT_PSD
+// #define SUPPORT_FILEFORMAT_HDR
+// #define SUPPORT_FILEFORMAT_PIC
+// #define SUPPORT_FILEFORMAT_PNM
+// #define SUPPORT_FILEFORMAT_DDS
+// #define SUPPORT_FILEFORMAT_PKM
+// #define SUPPORT_FILEFORMAT_KTX
+// #define SUPPORT_FILEFORMAT_PVR
+// #define SUPPORT_FILEFORMAT_ASTC
+// #define SUPPORT_IMAGE_EXPORT
+#define SUPPORT_IMAGE_MANIPULATION
+// #define SUPPORT_IMAGE_GENERATION
+
 // https://github.com/RobLoach/rimage
 #define RIMAGE_IMPLEMENTATION
 #include "rimage.h"
@@ -31,6 +51,16 @@ Image* screenBuffer;
 
 struct timeval now, start;
 
+// Get pointer to extension for a filename string (includes the dot: .png)
+const char* GetFileExtension(const char* fileName) {
+  const char* dot = strrchr(fileName, '.');
+
+  if (!dot || dot == fileName)
+    return NULL;
+
+  return dot;
+}
+
 // report physfs error
 void TracePhysFSError(const char* detail) {
   int errorCode = PHYSFS_getLastErrorCode();
@@ -42,12 +72,7 @@ void TracePhysFSError(const char* detail) {
   }
 }
 
-/**
- * Determine if a file exists in the search path.
- * @param fileName Filename in platform-independent notation.
- * @return True if the file exists, false otherwise.
- * @see DirectoryExistsInPhysFS()
- */
+// Determine if a file exists in the search path.
 bool FileExistsInPhysFS(const char* fileName) {
   PHYSFS_Stat stat;
   if (PHYSFS_stat(fileName, &stat) == 0) {
@@ -56,11 +81,7 @@ bool FileExistsInPhysFS(const char* fileName) {
   return stat.filetype == PHYSFS_FILETYPE_REGULAR;
 }
 
-/**
- * Get filsize in bytes from PhysFS.
- * @param fileName The filename to load from the search paths.
- * @return The bytes size or -1 for error
- */
+// Get filsize in bytes from PhysFS.
 int FileSizeFromPhysFS(const char* fileName) {
   if (FileExistsInPhysFS(fileName)) {
     void* handle = PHYSFS_openRead(fileName);
@@ -71,16 +92,7 @@ int FileSizeFromPhysFS(const char* fileName) {
   }
 }
 
-/**
- * Loads the given file as a byte array from PhysFS (read).
- *
- * @param fileName The file to load.
- * @param bytesRead An unsigned integer to save the bytes that were read.
- *
- * @return The file data as a pointer. Make sure to use UnloadFileData() when finished using the file data.
- *
- * @see UnloadFileData()
- */
+// Loads the given file as a byte array from PhysFS (read).
 unsigned char* LoadFileDataFromPhysFS(const char* fileName, unsigned int* bytesRead) {
   if (!FileExistsInPhysFS(fileName)) {
     fprintf(stderr, "null0: Tried to load unexisting file '%s'", fileName);
@@ -129,6 +141,26 @@ unsigned char* LoadFileDataFromPhysFS(const char* fileName, unsigned int* bytesR
   return buffer;
 }
 
+// Load an image from PhysFS.
+Image LoadImageFromPhysFS(const char* fileName) {
+  unsigned int bytesRead;
+  unsigned char* fileData = LoadFileDataFromPhysFS(fileName, &bytesRead);
+  if (bytesRead == 0) {
+    struct Image output;
+    output.data = 0;
+    output.width = 0;
+    output.height = 0;
+    return output;
+  }
+
+  // Load from the memory.
+  const char* extension = GetFileExtension(fileName);
+  printf("image: %s - %s - %d\n", fileName, extension, bytesRead);
+  Image image = LoadImageFromMemory(extension, fileData, bytesRead);
+  free(fileData);
+  return image;
+}
+
 // this checks the general state of the runtime, to make sure there are no errors lingering
 static void null0_check_wasm3_is_ok() {
   M3ErrorInfo error;
@@ -146,7 +178,7 @@ static void null0_check_wasm3(M3Result result) {
 }
 
 // copy a buffer into wasm RAM and return wasm-pointer (for strings)
-uint32_t lowerBuffer(void* buffer, size_t len, M3Memory* _mem) {
+uint32_t lowerBuffer(unsigned char* buffer, size_t len, M3Memory* _mem) {
   uint32_t wPointer;
   null0_check_wasm3(m3_CallV(new_func, len, 1));
   m3_GetResultsV(new_func, &wPointer);
@@ -196,7 +228,7 @@ static m3ApiRawFunction(null0_ReadText) {
   unsigned int* bytesRead;
   unsigned char* buffer = LoadFileDataFromPhysFS(fileName, bytesRead);
 
-  m3ApiReturn(lowerBuffer((char*)buffer, strlen(buffer) + 1, _mem));
+  m3ApiReturn(lowerBuffer(buffer, strlen((const char*)buffer) + 1, _mem));
 }
 
 // Clear background of screen-buffer image
@@ -251,15 +283,25 @@ static m3ApiRawFunction(null0_DrawRectangle) {
   m3ApiSuccess();
 }
 
-/*
-
 // Load image from file into CPU memory (RAM)
-static m3ApiRawFunction (null0_LoadImage) {
-  m3ApiReturnType (Image); // Image
+static m3ApiRawFunction(null0_LoadImage) {
+  m3ApiReturnType(uint32_t);
   m3ApiGetArgMem(const char*, fileName);
-  m3ApiReturn(LoadImage(fileName));
-
+  Image i = LoadImageFromPhysFS(fileName);
+  m3ApiReturn(&i);
 }
+
+// Draw a source image within a destination image (tint applied to source)
+static m3ApiRawFunction(null0_Draw) {
+  m3ApiGetArgMem(Image*, src);
+  m3ApiGetArgMem(Rectangle*, srcRec);
+  m3ApiGetArgMem(Rectangle*, dstRec);
+  m3ApiGetArgMem(Color*, tint);
+  ImageDraw(screenBuffer, *src, *srcRec, *dstRec, *tint);
+  m3ApiSuccess();
+}
+
+/*
 
 // Load image sequence from file (frames appended to image.data)
 static m3ApiRawFunction (null0_LoadImageAnim) {
@@ -800,19 +842,6 @@ static m3ApiRawFunction (null0_ImageDrawRectangleLines) {
   m3ApiSuccess();
 }
 
-// Draw a source image within a destination image (tint applied to source)
-static m3ApiRawFunction (null0_ImageDraw) {
-
-  m3ApiGetArgMem(Image*, dst);
-  m3ApiGetArg(Image, src);
-  m3ApiGetArg(Rectangle, srcRec);
-  m3ApiGetArg(Rectangle, dstRec);
-  m3ApiGetArg(Color, tint);
-
-  ImageDraw(dst, src, srcRec, dstRec, tint);
-  m3ApiSuccess();
-}
-
 // Draw text (using default font) within an image (destination)
 static m3ApiRawFunction (null0_ImageDrawText) {
 
@@ -1348,14 +1377,15 @@ bool null0_start(const void* wasmBuffer, size_t byteLength) {
   m3_LinkRawFunction(module, "env", "seed", "F()", &null0_seed);
   m3_LinkRawFunction(module, "env", "null0_fatal", "v(**ii)", &null0_fatal);
   m3_LinkRawFunction(module, "env", "null0_log", "v(*)", &null0_log);
-  m3_LinkRawFunction(module, "env", "null0_ReadText", "i(i)", &null0_ReadText);
+  m3_LinkRawFunction(module, "env", "null0_ReadText", "*(*)", &null0_ReadText);
   m3_LinkRawFunction(module, "env", "null0_ClearBackground", "v(i)", &null0_ClearBackground);
   m3_LinkRawFunction(module, "env", "null0_DrawText", "v(iiiii)", &null0_DrawText);
   m3_LinkRawFunction(module, "env", "null0_DrawCircle", "v(iiii)", &null0_DrawCircle);
   m3_LinkRawFunction(module, "env", "null0_DrawLine", "v(iiiii)", &null0_DrawLine);
   m3_LinkRawFunction(module, "env", "null0_DrawRectangle", "v(iiiii)", &null0_DrawRectangle);
+  m3_LinkRawFunction(module, "env", "null0_LoadImage", "*(*)", &null0_LoadImage);
+  m3_LinkRawFunction(module, "env", "null0_Draw", "v(****)", &null0_Draw);
 
-  // m3_LinkRawFunction(module, "env", "null0_LoadImage", "i(i)", &null0_LoadImage);
   // m3_LinkRawFunction(module, "env", "null0_LoadImageAnim", "i(ii)", &null0_LoadImageAnim);
   // m3_LinkRawFunction(module, "env", "null0_UnloadImage", "v(i)", &null0_UnloadImage);
   // m3_LinkRawFunction(module, "env", "null0_ExportImage", "i(ii)", &null0_ExportImage);
@@ -1409,7 +1439,6 @@ bool null0_start(const void* wasmBuffer, size_t byteLength) {
   // m3_LinkRawFunction(module, "env", "null0_ImageDrawRectangleV", "v(iiii)", &null0_ImageDrawRectangleV);
   // m3_LinkRawFunction(module, "env", "null0_ImageDrawRectangleRec", "v(iii)", &null0_ImageDrawRectangleRec);
   // m3_LinkRawFunction(module, "env", "null0_ImageDrawRectangleLines", "v(iiii)", &null0_ImageDrawRectangleLines);
-  // m3_LinkRawFunction(module, "env", "null0_ImageDraw", "v(iiiii)", &null0_ImageDraw);
   // m3_LinkRawFunction(module, "env", "null0_ImageDrawText", "v(iiiiiii)", &null0_ImageDrawText);
   // m3_LinkRawFunction(module, "env", "null0_ImageDrawTextEx", "v(iiiiiii)", &null0_ImageDrawTextEx);
   // m3_LinkRawFunction(module, "env", "null0_UnloadTexture", "v(i)", &null0_UnloadTexture);

@@ -92,8 +92,8 @@ export const RAYWHITE: Color  = { r:  245, g: 245, b: 245, a: 255 }
 
 // Load image from file into CPU memory (RAM)
 @external("env", "null0_LoadImage")
-declare function _LoadImage(fileName: ArrayBuffer): Image
-export function LoadImage(fileName: string): Image {
+declare function _LoadImage(fileName: ArrayBuffer): u32
+export function LoadImage(fileName: string): u32 {
   return _LoadImage(String.UTF8.encode(fileName, true))
 }
 
@@ -326,7 +326,7 @@ export declare function ImageDrawRectangleLines(dst: Image, rec: Rectangle, thic
 
 // Draw a source image within a destination image (tint applied to source)
 @external("env", "null0_ImageDraw")
-export declare function ImageDraw(dst: Image, src: Image, srcRec: Rectangle, dstRec: Rectangle, tint: Color): void
+export declare function ImageDraw(dst: u32, src: Image, srcRec: Rectangle, dstRec: Rectangle, tint: Color): void
 
 // Draw text (using default font) within an image (destination)
 @external("env", "null0_ImageDrawText")
@@ -650,6 +650,6 @@ export declare function DrawRectangleLines(rec: Rectangle, thick: i32, color: Co
 
 // Draw a source image within a destination image (tint applied to source)
 @external("env", "null0_Draw")
-export declare function Draw(src: Image, srcRec: Rectangle, dstRec: Rectangle, tint: Color): void
+export declare function Draw(src: u32, srcRec: Rectangle, dstRec: Rectangle, tint: Color): void
 
 
