@@ -12,8 +12,12 @@ npm i
 npm run build:host
 
 # build some carts to test
-npm run build:justlog
+npm run build:draw
+npm run build:errors
+npm run build:files
 npm run build:http
+npm run build:justlog
+npm run build:random
 
 # test with a simple node-based host
 npm test build/justlog.wasm
