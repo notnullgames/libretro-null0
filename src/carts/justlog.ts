@@ -2,5 +2,5 @@
 
 // called when the cart is loaded
 export function load(): void {
-  log('Hello! It works.')
+  log('Hello, from justlog load().')
 }

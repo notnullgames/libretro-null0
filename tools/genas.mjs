@@ -44,19 +44,32 @@ function getAsConversionParams(params = []) {
 // C types mapped to accemblyscript
 // TODO: look into fancier types: https://www.assemblyscript.org/types.html
 const typeMap = {
-  'Image': 'u32',
-  'Image*': 'u32',
+  'Image*': 'Image',
   'Color*': '[Color]',
+  'const GlyphInfo': 'GlyphInfo',
+  'const GlyphInfo*': 'GlyphInfo',
+  'GlyphInfo*': 'GlyphInfo',
+  'Texture2D*': 'Texture',
+  'Rectangle**': 'Rectangle[]',
   'int': 'i32',
   'int*': 'i32[]',
+  'const int*': 'i32[]',
   'unsigned int': 'u32',
+  'char*': 'ArrayBuffer',
   'const char*': 'ArrayBuffer',
-  'const unsigned char*': 'ArrayBuffer'
+  'const unsigned char*': 'ArrayBuffer',
+  'const void*': 'externref'
+}
+
+// as-side returns
+const retTypeMap = {
+  'char*': 'string',
+  'const char*': 'string'
 }
 
 // map return to as-type
-function getType(ret) {
-  return typeMap[ret] || ret || 'void'
+function getType(type, ret) {
+  return (ret ?  retTypeMap[type] ||  typeMap[type] : typeMap[type]) || type || 'void'
 }
 
 // these are aliases that wrap Image 0 (screen)
@@ -72,8 +85,7 @@ const screenAliases = [
   "ImageDrawRectangleV",
   "ImageDrawRectangleRec",
   "ImageDrawRectangleLines",
-  "ImageDraw",
-  "ImageDrawText"
+  "ImageDraw"
 ]
 
 const screenAliasesLookup = {}
@@ -86,20 +98,23 @@ function outputFunction(func) {
   let additional = ''
 
   const asParams = getAsParams(func.params)
-  const returns = getType(func.returns)
   let name = func.name
 
   if (asParams) {
+    const t = getType(func.returns, true)
     name = `_${name}`
-    additional = `
-export function ${func.name}(${asParams}): ${returns} {
+    additional = t !== 'string' ? `
+export function ${func.name}(${asParams}): ${t} {
   return ${name}(${getAsConversionParams(func.params)})
+}`: `
+export function ${func.name}(${asParams}): ${t} {
+  return String.UTF8.decode(${name}(${getAsConversionParams(func.params)}), true)
 }`
   }
 
   return `// ${func.comment}
 @external("env", "null0_${func.name}")
-${ asParams ? '' : 'export '}declare function ${name}(${getParams(func.params)}): ${returns}${additional}`
+${ asParams ? '' : 'export '}declare function ${name}(${getParams(func.params)}): ${getType(func.returns)}${additional}`
 }
 
 // similar to outputFunction, but strip ^Image for screen-level functions
@@ -114,35 +129,67 @@ function outputAlias(func) {
 
 let out = `// null0 assemblyscript header, generated ${(new Date()).toISOString()}
 
+// random number to stop complaints about Math.random(), used to wrap seed() - not a very good seed!
+export function __seed(): f64 {
+  return 0xdeadbeef
+}
+
 @unmanaged
 export class Color {
-  r: u8;
-  g: u8;
-  b: u8;
-  a: u8;
+  r: u8
+  g: u8
+  b: u8
+  a: u8
 }
 
 @unmanaged
 export class Vector3 {
-  x: f32;
-  y: f32;
-  z: f32;
+  x: f32
+  y: f32
+  z: f32
 }
 
 @unmanaged
 export class Vector4 {
-  x: f32;
-  y: f32;
-  z: f32;
-  w: f32;
+  x: f32
+  y: f32
+  z: f32
+  w: f32
 }
 
 @unmanaged
 export class Rectangle {
-  x: f32;
-  y: f32;
-  height: f32;
-  width: f32;
+  x: f32
+  y: f32
+  height: f32
+  width: f32
+}
+
+@unmanaged
+export class GlyphInfo {
+  value: i32
+  offsetX: i32
+  offsetY: i32
+  advanceX: i32
+  image: Image
+}
+
+@unmanaged
+export class Image {
+  data: ArrayBuffer
+  width: i32 
+  height: i32 
+  mipmaps: i32 
+  format: i32 
+}
+
+@unmanaged
+export class Texture {
+  id: u32
+  width: i32
+  height: i32
+  mipmaps: i32
+  format: i32
 }
 
 export const LIGHTGRAY: Color = { r:  200, g: 200, b: 200, a: 255 }

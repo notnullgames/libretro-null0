@@ -1,6 +1,6 @@
 // called when the cart is loaded
 export function load(): void {
-  log('Hello! It works.')
+  log('Hello, from draw load().')
 }
 
 // called per-frame to update screen

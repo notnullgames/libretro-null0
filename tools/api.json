@@ -72,16 +72,6 @@
     "comment": "Load image from memory buffer, fileType refers to extension: i.e. '.png'"
   },
   {
-    "returns": "Image",
-    "name": "LoadImageFromScreen",
-    "params": [
-      [
-        "void"
-      ]
-    ],
-    "comment": "Load image from screen buffer and (screenshot)"
-  },
-  {
     "returns": "void",
     "name": "UnloadImage",
     "params": [
@@ -358,6 +348,33 @@
       ]
     ],
     "comment": "Create an image from text (default font)"
+  },
+  {
+    "returns": "Image",
+    "name": "ImageTextEx",
+    "params": [
+      [
+        "Font",
+        "font"
+      ],
+      [
+        "const char*",
+        "text"
+      ],
+      [
+        "float",
+        "fontSize"
+      ],
+      [
+        "float",
+        "spacing"
+      ],
+      [
+        "Color",
+        "tint"
+      ]
+    ],
+    "comment": "Create an image from text (custom sprite font)"
   },
   {
     "returns": "void",
@@ -923,7 +940,7 @@
         "color"
       ]
     ],
-    "comment": "Draw circle within an image"
+    "comment": "Draw a filled circle within an image"
   },
   {
     "returns": "void",
@@ -946,7 +963,7 @@
         "color"
       ]
     ],
-    "comment": "Draw circle within an image (Vector version)"
+    "comment": "Draw a filled circle within an image (Vector version)"
   },
   {
     "returns": "void",
@@ -1130,6 +1147,10 @@
         "dst"
       ],
       [
+        "Font",
+        "font"
+      ],
+      [
         "const char*",
         "text"
       ],
@@ -1151,6 +1172,292 @@
       ]
     ],
     "comment": "Draw text (using default font) within an image (destination)"
+  },
+  {
+    "returns": "void",
+    "name": "ImageDrawTextEx",
+    "params": [
+      [
+        "Image*",
+        "dst"
+      ],
+      [
+        "Font",
+        "font"
+      ],
+      [
+        "const char*",
+        "text"
+      ],
+      [
+        "Vector2",
+        "position"
+      ],
+      [
+        "float",
+        "fontSize"
+      ],
+      [
+        "float",
+        "spacing"
+      ],
+      [
+        "Color",
+        "tint"
+      ]
+    ],
+    "comment": "Draw text (custom sprite font) within an image (destination)"
+  },
+  {
+    "returns": "void",
+    "name": "UnloadTexture",
+    "params": [
+      [
+        "Texture2D",
+        "texture"
+      ]
+    ],
+    "comment": "Unload texture from GPU memory (VRAM)"
+  },
+  {
+    "returns": "void",
+    "name": "UnloadRenderTexture",
+    "params": [
+      [
+        "RenderTexture2D",
+        "target"
+      ]
+    ],
+    "comment": "Unload render texture from GPU memory (VRAM)"
+  },
+  {
+    "returns": "void",
+    "name": "UpdateTexture",
+    "params": [
+      [
+        "Texture2D",
+        "texture"
+      ],
+      [
+        "const void*",
+        "pixels"
+      ]
+    ],
+    "comment": "Update GPU texture with new data"
+  },
+  {
+    "returns": "void",
+    "name": "UpdateTextureRec",
+    "params": [
+      [
+        "Texture2D",
+        "texture"
+      ],
+      [
+        "Rectangle",
+        "rec"
+      ],
+      [
+        "const void*",
+        "pixels"
+      ]
+    ],
+    "comment": "Update GPU texture rectangle with new data"
+  },
+  {
+    "returns": "void",
+    "name": "GenTextureMipmaps",
+    "params": [
+      [
+        "Texture2D*",
+        "texture"
+      ]
+    ],
+    "comment": "Generate GPU mipmaps for a texture"
+  },
+  {
+    "returns": "void",
+    "name": "SetTextureFilter",
+    "params": [
+      [
+        "Texture2D",
+        "texture"
+      ],
+      [
+        "int",
+        "filter"
+      ]
+    ],
+    "comment": "Set texture scaling filter mode"
+  },
+  {
+    "returns": "void",
+    "name": "SetTextureWrap",
+    "params": [
+      [
+        "Texture2D",
+        "texture"
+      ],
+      [
+        "int",
+        "wrap"
+      ]
+    ],
+    "comment": "Set texture wrapping mode"
+  },
+  {
+    "returns": "void",
+    "name": "DrawTexture",
+    "params": [
+      [
+        "Texture2D",
+        "texture"
+      ],
+      [
+        "int",
+        "posX"
+      ],
+      [
+        "int",
+        "posY"
+      ],
+      [
+        "Color",
+        "tint"
+      ]
+    ],
+    "comment": "Draw a Texture2D"
+  },
+  {
+    "returns": "void",
+    "name": "DrawTextureV",
+    "params": [
+      [
+        "Texture2D",
+        "texture"
+      ],
+      [
+        "Vector2",
+        "position"
+      ],
+      [
+        "Color",
+        "tint"
+      ]
+    ],
+    "comment": "Draw a Texture2D with position defined as Vector2"
+  },
+  {
+    "returns": "void",
+    "name": "DrawTextureEx",
+    "params": [
+      [
+        "Texture2D",
+        "texture"
+      ],
+      [
+        "Vector2",
+        "position"
+      ],
+      [
+        "float",
+        "rotation"
+      ],
+      [
+        "float",
+        "scale"
+      ],
+      [
+        "Color",
+        "tint"
+      ]
+    ],
+    "comment": "Draw a Texture2D with extended parameters"
+  },
+  {
+    "returns": "void",
+    "name": "DrawTextureRec",
+    "params": [
+      [
+        "Texture2D",
+        "texture"
+      ],
+      [
+        "Rectangle",
+        "source"
+      ],
+      [
+        "Vector2",
+        "position"
+      ],
+      [
+        "Color",
+        "tint"
+      ]
+    ],
+    "comment": "Draw a part of a texture defined by a rectangle"
+  },
+  {
+    "returns": "void",
+    "name": "DrawTexturePro",
+    "params": [
+      [
+        "Texture2D",
+        "texture"
+      ],
+      [
+        "Rectangle",
+        "source"
+      ],
+      [
+        "Rectangle",
+        "dest"
+      ],
+      [
+        "Vector2",
+        "origin"
+      ],
+      [
+        "float",
+        "rotation"
+      ],
+      [
+        "Color",
+        "tint"
+      ]
+    ],
+    "comment": "Draw a part of a texture defined by a rectangle with 'pro' parameters"
+  },
+  {
+    "returns": "void",
+    "name": "DrawTextureNPatch",
+    "params": [
+      [
+        "Texture2D",
+        "texture"
+      ],
+      [
+        "NPatchInfo",
+        "nPatchInfo"
+      ],
+      [
+        "Rectangle",
+        "dest"
+      ],
+      [
+        "Vector2",
+        "origin"
+      ],
+      [
+        "float",
+        "rotation"
+      ],
+      [
+        "Color",
+        "tint"
+      ]
+    ],
+    "comment": "Draws a texture (or part of it) that stretches or shrinks nicely"
   },
   {
     "returns": "Color",
@@ -1374,6 +1681,409 @@
     "comment": "Get pixel data size in bytes for certain format"
   },
   {
+    "returns": "Image",
+    "name": "GenImageFontAtlas",
+    "params": [
+      [
+        "const GlyphInfo*",
+        "chars"
+      ],
+      [
+        "Rectangle**",
+        "recs"
+      ],
+      [
+        "int",
+        "glyphCount"
+      ],
+      [
+        "int",
+        "fontSize"
+      ],
+      [
+        "int",
+        "padding"
+      ],
+      [
+        "int",
+        "packMethod"
+      ]
+    ],
+    "comment": "Generate image font atlas using chars info"
+  },
+  {
+    "returns": "void",
+    "name": "UnloadFontData",
+    "params": [
+      [
+        "GlyphInfo*",
+        "chars"
+      ],
+      [
+        "int",
+        "glyphCount"
+      ]
+    ],
+    "comment": "Unload font chars info data (RAM)"
+  },
+  {
+    "returns": "void",
+    "name": "UnloadFont",
+    "params": [
+      [
+        "Font",
+        "font"
+      ]
+    ],
+    "comment": "Unload font from GPU memory (VRAM)"
+  },
+  {
+    "returns": "void",
+    "name": "DrawFPS",
+    "params": [
+      [
+        "int",
+        "posX"
+      ],
+      [
+        "int",
+        "posY"
+      ]
+    ],
+    "comment": "Draw current FPS"
+  },
+  {
+    "returns": "void",
+    "name": "DrawText",
+    "params": [
+      [
+        "const char*",
+        "text"
+      ],
+      [
+        "int",
+        "posX"
+      ],
+      [
+        "int",
+        "posY"
+      ],
+      [
+        "int",
+        "fontSize"
+      ],
+      [
+        "Color",
+        "color"
+      ]
+    ],
+    "comment": "Draw text (using default font)"
+  },
+  {
+    "returns": "void",
+    "name": "DrawTextEx",
+    "params": [
+      [
+        "Font",
+        "font"
+      ],
+      [
+        "const char*",
+        "text"
+      ],
+      [
+        "Vector2",
+        "position"
+      ],
+      [
+        "float",
+        "fontSize"
+      ],
+      [
+        "float",
+        "spacing"
+      ],
+      [
+        "Color",
+        "tint"
+      ]
+    ],
+    "comment": "Draw text using font and additional parameters"
+  },
+  {
+    "returns": "void",
+    "name": "DrawTextPro",
+    "params": [
+      [
+        "Font",
+        "font"
+      ],
+      [
+        "const char*",
+        "text"
+      ],
+      [
+        "Vector2",
+        "position"
+      ],
+      [
+        "Vector2",
+        "origin"
+      ],
+      [
+        "float",
+        "rotation"
+      ],
+      [
+        "float",
+        "fontSize"
+      ],
+      [
+        "float",
+        "spacing"
+      ],
+      [
+        "Color",
+        "tint"
+      ]
+    ],
+    "comment": "Draw text using Font and pro parameters (rotation)"
+  },
+  {
+    "returns": "void",
+    "name": "DrawTextCodepoint",
+    "params": [
+      [
+        "Font",
+        "font"
+      ],
+      [
+        "int",
+        "codepoint"
+      ],
+      [
+        "Vector2",
+        "position"
+      ],
+      [
+        "float",
+        "fontSize"
+      ],
+      [
+        "Color",
+        "tint"
+      ]
+    ],
+    "comment": "Draw one character (codepoint)"
+  },
+  {
+    "returns": "void",
+    "name": "DrawTextCodepoints",
+    "params": [
+      [
+        "Font",
+        "font"
+      ],
+      [
+        "const int*",
+        "codepoints"
+      ],
+      [
+        "int",
+        "count"
+      ],
+      [
+        "Vector2",
+        "position"
+      ],
+      [
+        "float",
+        "fontSize"
+      ],
+      [
+        "float",
+        "spacing"
+      ],
+      [
+        "Color",
+        "tint"
+      ]
+    ],
+    "comment": "Draw multiple character (codepoint)"
+  },
+  {
+    "returns": "int",
+    "name": "GetGlyphIndex",
+    "params": [
+      [
+        "Font",
+        "font"
+      ],
+      [
+        "int",
+        "codepoint"
+      ]
+    ],
+    "comment": "Get glyph index position in font for a codepoint (unicode character), fallback to '?' if not found"
+  },
+  {
+    "returns": "int",
+    "name": "LoadCodepoints",
+    "params": [
+      [
+        "const char*",
+        "text"
+      ],
+      [
+        "int*",
+        "count"
+      ]
+    ],
+    "comment": "Load all codepoints from a UTF-8 text string, codepoints count returned by parameter"
+  },
+  {
+    "returns": "void",
+    "name": "UnloadCodepoints",
+    "params": [
+      [
+        "int*",
+        "codepoints"
+      ]
+    ],
+    "comment": "Unload codepoints data from memory"
+  },
+  {
+    "returns": "int",
+    "name": "GetCodepointCount",
+    "params": [
+      [
+        "const char*",
+        "text"
+      ]
+    ],
+    "comment": "Get total number of codepoints in a UTF-8 encoded string"
+  },
+  {
+    "returns": "int",
+    "name": "GetCodepoint",
+    "params": [
+      [
+        "const char*",
+        "text"
+      ],
+      [
+        "int*",
+        "codepointSize"
+      ]
+    ],
+    "comment": "Get next codepoint in a UTF-8 encoded string, 0x3f('?') is returned on failure"
+  },
+  {
+    "returns": "int",
+    "name": "GetCodepointNext",
+    "params": [
+      [
+        "const char*",
+        "text"
+      ],
+      [
+        "int*",
+        "codepointSize"
+      ]
+    ],
+    "comment": "Get next codepoint in a UTF-8 encoded string, 0x3f('?') is returned on failure"
+  },
+  {
+    "returns": "int",
+    "name": "GetCodepointPrevious",
+    "params": [
+      [
+        "const char*",
+        "text"
+      ],
+      [
+        "int*",
+        "codepointSize"
+      ]
+    ],
+    "comment": "Get previous codepoint in a UTF-8 encoded string, 0x3f('?') is returned on failure"
+  },
+  {
+    "returns": "int",
+    "name": "TextCopy",
+    "params": [
+      [
+        "char*",
+        "dst"
+      ],
+      [
+        "const char*",
+        "src"
+      ]
+    ],
+    "comment": "Copy one string to another, returns bytes copied"
+  },
+  {
+    "returns": "bool",
+    "name": "TextIsEqual",
+    "params": [
+      [
+        "const char*",
+        "text1"
+      ],
+      [
+        "const char*",
+        "text2"
+      ]
+    ],
+    "comment": "Check if two text string are equal"
+  },
+  {
+    "returns": "void",
+    "name": "TextAppend",
+    "params": [
+      [
+        "char*",
+        "text"
+      ],
+      [
+        "const char*",
+        "append"
+      ],
+      [
+        "int*",
+        "position"
+      ]
+    ],
+    "comment": "Append text at specific position and move cursor!"
+  },
+  {
+    "returns": "int",
+    "name": "TextFindIndex",
+    "params": [
+      [
+        "const char*",
+        "text"
+      ],
+      [
+        "const char*",
+        "find"
+      ]
+    ],
+    "comment": "Find first text occurrence within a string"
+  },
+  {
+    "returns": "int",
+    "name": "TextToInteger",
+    "params": [
+      [
+        "const char*",
+        "text"
+      ]
+    ],
+    "comment": "Get integer value from text (negative values not supported)"
+  },
+  {
     "name": "log",
     "returns": "void",
     "params": [
@@ -1382,6 +2092,62 @@
         "text"
       ]
     ],
-    "comment": "log a string"
+    "comment": "Log a string"
+  },
+  {
+    "name": "fatal",
+    "returns": "void",
+    "params": [
+      [
+        "const char*",
+        "message"
+      ],
+      [
+        "const char*",
+        "filename"
+      ],
+      [
+        "int",
+        "lineNumber"
+      ],
+      [
+        "int",
+        "columnNumber"
+      ]
+    ],
+    "comment": "Fatal error - call this from your code on a fatal runtime error, similar to assemblyscript's abort(), but it's utf8"
+  },
+  {
+    "name": "ReadText",
+    "returns": "const char*",
+    "params": [
+      [
+        "const char*",
+        "fileName"
+      ]
+    ],
+    "comment": "Read a text-file from virtual filesystem"
+  },
+  {
+    "name": "FileExists",
+    "returns": "bool",
+    "params": [
+      [
+        "const char*",
+        "fileName"
+      ]
+    ],
+    "comment": "Check if the file exists"
+  },
+  {
+    "name": "GetUrl",
+    "returns": "const char*",
+    "params": [
+      [
+        "const char*",
+        "url"
+      ]
+    ],
+    "comment": "Perform a GET request on URL"
   }
 ]

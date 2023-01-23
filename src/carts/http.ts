@@ -2,6 +2,6 @@
 
 // called when the cart is loaded
 export function load(): void {
-  const r:string = http_get("https://example.com")
+  const r = GetUrl("https://example.com")
   log(r)
 }

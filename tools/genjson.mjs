@@ -20,7 +20,7 @@ while ((m = regex.exec(str)) !== null) {
   const rec = {
     returns: m[1].trim(),
     name: m[2].trim(),
-    params: m[3].split(',').map(s => s.trim().replace(' *', '* ').split(' ')),
+    params: m[3].split(',').map(s => s.trim().replace(' **', '** ').replace(' *', '* ').split(' ')),
     comment: m[4].trim()
   }
 
@@ -49,8 +49,46 @@ out.push({
   params: [
     ['const char*', 'text']
   ],
-  comment: 'log a string'
+  comment: 'Log a string'
+})
+
+out.push({
+  name: 'fatal',
+  returns: 'void',
+  params: [
+    ['const char*', 'message'],
+    ['const char*', 'filename'],
+    ['int', 'lineNumber'],
+    ['int', 'columnNumber']
+  ],
+  comment: 'Fatal error - call this from your code on a fatal runtime error, similar to assemblyscript\'s abort(), but it\'s utf8'
+})
+
+out.push({
+  name: 'ReadText',
+  returns: 'const char*',
+  params: [
+    ['const char*', 'fileName']
+  ],
+  comment: 'Read a text-file from virtual filesystem'
+})
+
+out.push({
+  name: 'FileExists',
+  returns: 'bool',
+  params: [
+    ['const char*', 'fileName']
+  ],
+  comment: 'Check if the file exists'
+})
+
+out.push({
+  name: 'GetUrl',
+  returns: 'const char*',
+  params: [
+    ['const char*', 'url']
+  ],
+  comment: 'Perform a GET request on URL'
 })
 
 console.log(JSON.stringify(out, null, 2))
-
