@@ -146,17 +146,23 @@ static void null0_check_wasm3(M3Result result) {
 }
 
 // copy a buffer into wasm RAM and return wasm-pointer (for strings)
-uint32_t lowerBuffer(char* buffer, M3Memory* _mem) {
+uint32_t lowerBuffer(void* buffer, size_t len, M3Memory* _mem) {
   uint32_t wPointer;
-  size_t s = strlen(buffer) + 1;
-  null0_check_wasm3(m3_CallV(new_func, s, 1));
+  null0_check_wasm3(m3_CallV(new_func, len, 1));
   m3_GetResultsV(new_func, &wPointer);
   char* wBuffer = m3ApiOffsetToPtr(wPointer);
-  memcpy(wBuffer, buffer, s);
+  memcpy(wBuffer, buffer, len);
   return wPointer;
 }
 
 // IMPORTS
+
+// exposed to wasm to seed random-generator
+static m3ApiRawFunction(null0_seed) {
+  m3ApiReturnType(double);
+  gettimeofday(&now, NULL);
+  m3ApiReturn(now.tv_usec);
+}
 
 //  Fatal error - call this from your code on a fatal runtime error, similar to assemblyscript's abort(), but it's utf8
 static m3ApiRawFunction(null0_fatal) {
@@ -182,7 +188,7 @@ static m3ApiRawFunction(null0_ReadText) {
 
   if (!FileExistsInPhysFS(fileName)) {
     fprintf(stderr, "null0: %s does not exist.\n", fileName);
-    m3ApiReturn(1024 * 1024);
+    m3ApiReturn(0);
     return 0;
   }
 
@@ -190,7 +196,7 @@ static m3ApiRawFunction(null0_ReadText) {
   unsigned int* bytesRead;
   unsigned char* buffer = LoadFileDataFromPhysFS(fileName, bytesRead);
 
-  m3ApiReturn(lowerBuffer((char*)buffer, _mem));
+  m3ApiReturn(lowerBuffer((char*)buffer, strlen(buffer) + 1, _mem));
 }
 
 // Clear background of screen-buffer image
@@ -1339,6 +1345,7 @@ bool null0_start(const void* wasmBuffer, size_t byteLength) {
   null0_check_wasm3(m3_LoadModule(runtime, module));
 
   // IMPORTS
+  m3_LinkRawFunction(module, "env", "seed", "F()", &null0_seed);
   m3_LinkRawFunction(module, "env", "null0_fatal", "v(**ii)", &null0_fatal);
   m3_LinkRawFunction(module, "env", "null0_log", "v(*)", &null0_log);
   m3_LinkRawFunction(module, "env", "null0_ReadText", "i(i)", &null0_ReadText);

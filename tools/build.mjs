@@ -38,7 +38,18 @@ const camelCaseToTitleCase = (s) =>
   ).join('')
 
 // compile wat/wasm
-const options = `--use abort=fatal --use seed=__seed --lib src/carts/null0.ts --runtime stub --exportRuntime --optimize --stats src/carts/${target}.ts -o build/${target}.wasm -t build/${target}.wat --bindings esm`.split(' ')
+const options = [
+  '--use', 'abort=fatal',
+  '--lib', 'src/carts/null0.ts',
+  '--runtime', 'stub',
+  '--exportRuntime',
+  '--optimize',
+  '--stats',
+  `src/carts/${target}.ts`,
+  '-o', `build/${target}.wasm`,
+  '-t', `build/${target}.wat`,
+  '--bindings', 'esm'
+]
 
 const { stats, stdout, stderr, error } = await asc.main(options)
 

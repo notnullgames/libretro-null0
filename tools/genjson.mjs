@@ -74,6 +74,16 @@ out.push({
 })
 
 out.push({
+  name: 'WriteText',
+  returns: 'void',
+  params: [
+    ['const char*', 'fileName'],
+    ['const char*', 'contents']
+  ],
+  comment: 'Write a text-file to the virtual filesystem'
+})
+
+out.push({
   name: 'FileExists',
   returns: 'bool',
   params: [

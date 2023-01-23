@@ -1,10 +1,5 @@
 // null0 assemblyscript header, generated 2023-01-23T06:18:57.232Z
 
-// random number to stop complaints about Math.random(), used to wrap seed() - not a very good seed!
-export function __seed(): f64 {
-  return 0xdeadbeef
-}
-
 @unmanaged
 export class Color {
   r: u8
