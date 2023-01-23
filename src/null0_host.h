@@ -49,6 +49,10 @@ static M3Function* cart_load;
 static M3Function* cart_update;
 Image* screenBuffer;
 
+// TODO: I'm sure this is not the right way to hold on to these.
+Image resourceImages[1024];
+unsigned int imageCounter = 0;
+
 struct timeval now, start;
 
 // Get pointer to extension for a filename string (includes the dot: .png)
@@ -287,17 +291,18 @@ static m3ApiRawFunction(null0_DrawRectangle) {
 static m3ApiRawFunction(null0_LoadImage) {
   m3ApiReturnType(uint32_t);
   m3ApiGetArgMem(const char*, fileName);
-  Image i = LoadImageFromPhysFS(fileName);
-  m3ApiReturn(&i);
+  resourceImages[imageCounter++] = LoadImageFromPhysFS(fileName);
+  m3ApiReturn(imageCounter);
 }
 
 // Draw a source image within a destination image (tint applied to source)
 static m3ApiRawFunction(null0_Draw) {
-  m3ApiGetArgMem(Image*, src);
+  m3ApiGetArg(uint32_t, src);
   m3ApiGetArgMem(Rectangle*, srcRec);
   m3ApiGetArgMem(Rectangle*, dstRec);
   m3ApiGetArgMem(Color*, tint);
-  ImageDraw(screenBuffer, *src, *srcRec, *dstRec, *tint);
+  // printf("(%f, %f, %f, %f) (%f, %f, %f, %f) (%d, %d, %d %d)\n", srcRec->x, srcRec->y, srcRec->width, srcRec->height, dstRec->x, dstRec->y, dstRec->width, dstRec->height, tint->r, tint->g, tint->b, tint->a);
+  ImageDraw(screenBuffer, resourceImages[src], *srcRec, *dstRec, *tint);
   m3ApiSuccess();
 }
 

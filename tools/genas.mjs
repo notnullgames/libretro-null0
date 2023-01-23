@@ -44,7 +44,7 @@ function getAsConversionParams(params = []) {
 // C types mapped to accemblyscript
 // TODO: look into fancier types: https://www.assemblyscript.org/types.html
 const typeMap = {
-  'Image*': 'Image',
+  'Image*': 'u32',
   'Color*': '[Color]',
   'const GlyphInfo': 'GlyphInfo',
   'const GlyphInfo*': 'GlyphInfo',
