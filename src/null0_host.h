@@ -145,6 +145,17 @@ static void null0_check_wasm3(M3Result result) {
   }
 }
 
+// copy a buffer into wasm RAM and return wasm-pointer (for strings)
+uint32_t lowerBuffer(char* buffer, M3Memory* _mem) {
+  uint32_t wPointer;
+  size_t s = strlen(buffer) + 1;
+  null0_check_wasm3(m3_CallV(new_func, s, 1));
+  m3_GetResultsV(new_func, &wPointer);
+  char* wBuffer = m3ApiOffsetToPtr(wPointer);
+  memcpy(wBuffer, buffer, s);
+  return wPointer;
+}
+
 // IMPORTS
 
 //  Fatal error - call this from your code on a fatal runtime error, similar to assemblyscript's abort(), but it's utf8
@@ -179,15 +190,7 @@ static m3ApiRawFunction(null0_ReadText) {
   unsigned int* bytesRead;
   unsigned char* buffer = LoadFileDataFromPhysFS(fileName, bytesRead);
 
-  // lowerBuffer
-  uint32_t wPointer;
-  size_t s = strlen((char*)buffer) + 1;
-  null0_check_wasm3(m3_CallV(new_func, s, 1));
-  m3_GetResultsV(new_func, &wPointer);
-  char* wBuffer = m3ApiOffsetToPtr(wPointer);
-  memcpy(wBuffer, buffer, s);
-
-  m3ApiReturn(wPointer);
+  m3ApiReturn(lowerBuffer((char*)buffer, _mem));
 }
 
 // Clear background of screen-buffer image
