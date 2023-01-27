@@ -1,4 +1,4 @@
-let image:u32
+let image = new Image()
 
 const sourceSize = new Rectangle()
 sourceSize.x = 0
@@ -21,5 +21,5 @@ export function update(dt: i32): void {
   DrawCircle(200 , 150, 30, RED)
   DrawRectangle(10, 20, 100, 140, GREEN)
   DrawLine(0, 30, 200, 200, ORANGE)
-  Draw(image, sourceSize, destRec, WHITE)
+  DrawImage(image, sourceSize, destRec, WHITE)
 }

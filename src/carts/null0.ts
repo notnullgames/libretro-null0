@@ -1,4 +1,9 @@
-// null0 assemblyscript header, generated 2023-01-23T06:18:57.232Z
+// null0 assemblyscript header, generated 2023-01-27T03:13:56.278Z
+
+// random number to stop complaints about Math.random(), used to wrap seed() - not a very good seed!
+export function __seed(): f64 {
+  return 0xdeadbeef
+}
 
 @unmanaged
 export class Color {
@@ -42,10 +47,9 @@ export class GlyphInfo {
 
 @unmanaged
 export class Image {
-  data: ArrayBuffer
+  id: u32
   width: i32 
   height: i32 
-  mipmaps: i32 
   format: i32 
 }
 
@@ -54,7 +58,6 @@ export class Texture {
   id: u32
   width: i32
   height: i32
-  mipmaps: i32
   format: i32
 }
 
@@ -92,8 +95,8 @@ export const RAYWHITE: Color  = { r:  245, g: 245, b: 245, a: 255 }
 
 // Load image from file into CPU memory (RAM)
 @external("env", "null0_LoadImage")
-declare function _LoadImage(fileName: ArrayBuffer): u32
-export function LoadImage(fileName: string): u32 {
+declare function _LoadImage(fileName: ArrayBuffer): Image
+export function LoadImage(fileName: string): Image {
   return _LoadImage(String.UTF8.encode(fileName, true))
 }
 
@@ -178,95 +181,95 @@ export function ImageTextEx(font: Font, text: string, fontSize: float, spacing: 
 
 // Convert image data to desired format
 @external("env", "null0_ImageFormat")
-export declare function ImageFormat(image: Image, newFormat: i32): void
+export declare function ImageFormat(image: u32, newFormat: i32): void
 
 // Convert image to POT (power-of-two)
 @external("env", "null0_ImageToPOT")
-export declare function ImageToPOT(image: Image, fill: Color): void
+export declare function ImageToPOT(image: u32, fill: Color): void
 
 // Crop an image to a defined rectangle
 @external("env", "null0_ImageCrop")
-export declare function ImageCrop(image: Image, crop: Rectangle): void
+export declare function ImageCrop(image: u32, crop: Rectangle): void
 
 // Crop image depending on alpha value
 @external("env", "null0_ImageAlphaCrop")
-export declare function ImageAlphaCrop(image: Image, threshold: float): void
+export declare function ImageAlphaCrop(image: u32, threshold: float): void
 
 // Clear alpha channel to desired color
 @external("env", "null0_ImageAlphaClear")
-export declare function ImageAlphaClear(image: Image, color: Color, threshold: float): void
+export declare function ImageAlphaClear(image: u32, color: Color, threshold: float): void
 
 // Apply alpha mask to image
 @external("env", "null0_ImageAlphaMask")
-export declare function ImageAlphaMask(image: Image, alphaMask: Image): void
+export declare function ImageAlphaMask(image: u32, alphaMask: Image): void
 
 // Premultiply alpha channel
 @external("env", "null0_ImageAlphaPremultiply")
-export declare function ImageAlphaPremultiply(image: Image): void
+export declare function ImageAlphaPremultiply(image: u32): void
 
 // Apply Gaussian blur using a box blur approximation
 @external("env", "null0_ImageBlurGaussian")
-export declare function ImageBlurGaussian(image: Image, blurSize: i32): void
+export declare function ImageBlurGaussian(image: u32, blurSize: i32): void
 
 // Resize image (Bicubic scaling algorithm)
 @external("env", "null0_ImageResize")
-export declare function ImageResize(image: Image, newWidth: i32, newHeight: i32): void
+export declare function ImageResize(image: u32, newWidth: i32, newHeight: i32): void
 
 // Resize image (Nearest-Neighbor scaling algorithm)
 @external("env", "null0_ImageResizeNN")
-export declare function ImageResizeNN(image: Image, newWidth: i32, newHeight: i32): void
+export declare function ImageResizeNN(image: u32, newWidth: i32, newHeight: i32): void
 
 // Resize canvas and fill with color
 @external("env", "null0_ImageResizeCanvas")
-export declare function ImageResizeCanvas(image: Image, newWidth: i32, newHeight: i32, offsetX: i32, offsetY: i32, fill: Color): void
+export declare function ImageResizeCanvas(image: u32, newWidth: i32, newHeight: i32, offsetX: i32, offsetY: i32, fill: Color): void
 
 // Compute all mipmap levels for a provided image
 @external("env", "null0_ImageMipmaps")
-export declare function ImageMipmaps(image: Image): void
+export declare function ImageMipmaps(image: u32): void
 
 // Dither image data to 16bpp or lower (Floyd-Steinberg dithering)
 @external("env", "null0_ImageDither")
-export declare function ImageDither(image: Image, rBpp: i32, gBpp: i32, bBpp: i32, aBpp: i32): void
+export declare function ImageDither(image: u32, rBpp: i32, gBpp: i32, bBpp: i32, aBpp: i32): void
 
 // Flip image vertically
 @external("env", "null0_ImageFlipVertical")
-export declare function ImageFlipVertical(image: Image): void
+export declare function ImageFlipVertical(image: u32): void
 
 // Flip image horizontally
 @external("env", "null0_ImageFlipHorizontal")
-export declare function ImageFlipHorizontal(image: Image): void
+export declare function ImageFlipHorizontal(image: u32): void
 
 // Rotate image clockwise 90deg
 @external("env", "null0_ImageRotateCW")
-export declare function ImageRotateCW(image: Image): void
+export declare function ImageRotateCW(image: u32): void
 
 // Rotate image counter-clockwise 90deg
 @external("env", "null0_ImageRotateCCW")
-export declare function ImageRotateCCW(image: Image): void
+export declare function ImageRotateCCW(image: u32): void
 
 // Modify image color: tint
 @external("env", "null0_ImageColorTint")
-export declare function ImageColorTint(image: Image, color: Color): void
+export declare function ImageColorTint(image: u32, color: Color): void
 
 // Modify image color: invert
 @external("env", "null0_ImageColorInvert")
-export declare function ImageColorInvert(image: Image): void
+export declare function ImageColorInvert(image: u32): void
 
 // Modify image color: grayscale
 @external("env", "null0_ImageColorGrayscale")
-export declare function ImageColorGrayscale(image: Image): void
+export declare function ImageColorGrayscale(image: u32): void
 
 // Modify image color: contrast (-100 to 100)
 @external("env", "null0_ImageColorContrast")
-export declare function ImageColorContrast(image: Image, contrast: float): void
+export declare function ImageColorContrast(image: u32, contrast: float): void
 
 // Modify image color: brightness (-255 to 255)
 @external("env", "null0_ImageColorBrightness")
-export declare function ImageColorBrightness(image: Image, brightness: i32): void
+export declare function ImageColorBrightness(image: u32, brightness: i32): void
 
 // Modify image color: replace color
 @external("env", "null0_ImageColorReplace")
-export declare function ImageColorReplace(image: Image, color: Color, replace: Color): void
+export declare function ImageColorReplace(image: u32, color: Color, replace: Color): void
 
 // Get image pixel color at (x, y) position
 @external("env", "null0_GetImageColor")
@@ -274,55 +277,55 @@ export declare function GetImageColor(image: Image, x: i32, y: i32): Color
 
 // Clear image background with given color
 @external("env", "null0_ImageClearBackground")
-export declare function ImageClearBackground(dst: Image, color: Color): void
+export declare function ImageClearBackground(dst: u32, color: Color): void
 
 // Draw pixel within an image
 @external("env", "null0_ImageDrawPixel")
-export declare function ImageDrawPixel(dst: Image, posX: i32, posY: i32, color: Color): void
+export declare function ImageDrawPixel(dst: u32, posX: i32, posY: i32, color: Color): void
 
 // Draw pixel within an image (Vector version)
 @external("env", "null0_ImageDrawPixelV")
-export declare function ImageDrawPixelV(dst: Image, position: Vector2, color: Color): void
+export declare function ImageDrawPixelV(dst: u32, position: Vector2, color: Color): void
 
 // Draw line within an image
 @external("env", "null0_ImageDrawLine")
-export declare function ImageDrawLine(dst: Image, startPosX: i32, startPosY: i32, endPosX: i32, endPosY: i32, color: Color): void
+export declare function ImageDrawLine(dst: u32, startPosX: i32, startPosY: i32, endPosX: i32, endPosY: i32, color: Color): void
 
 // Draw line within an image (Vector version)
 @external("env", "null0_ImageDrawLineV")
-export declare function ImageDrawLineV(dst: Image, start: Vector2, end: Vector2, color: Color): void
+export declare function ImageDrawLineV(dst: u32, start: Vector2, end: Vector2, color: Color): void
 
 // Draw a filled circle within an image
 @external("env", "null0_ImageDrawCircle")
-export declare function ImageDrawCircle(dst: Image, centerX: i32, centerY: i32, radius: i32, color: Color): void
+export declare function ImageDrawCircle(dst: u32, centerX: i32, centerY: i32, radius: i32, color: Color): void
 
 // Draw a filled circle within an image (Vector version)
 @external("env", "null0_ImageDrawCircleV")
-export declare function ImageDrawCircleV(dst: Image, center: Vector2, radius: i32, color: Color): void
+export declare function ImageDrawCircleV(dst: u32, center: Vector2, radius: i32, color: Color): void
 
 // Draw circle outline within an image
 @external("env", "null0_ImageDrawCircleLines")
-export declare function ImageDrawCircleLines(dst: Image, centerX: i32, centerY: i32, radius: i32, color: Color): void
+export declare function ImageDrawCircleLines(dst: u32, centerX: i32, centerY: i32, radius: i32, color: Color): void
 
 // Draw circle outline within an image (Vector version)
 @external("env", "null0_ImageDrawCircleLinesV")
-export declare function ImageDrawCircleLinesV(dst: Image, center: Vector2, radius: i32, color: Color): void
+export declare function ImageDrawCircleLinesV(dst: u32, center: Vector2, radius: i32, color: Color): void
 
 // Draw rectangle within an image
 @external("env", "null0_ImageDrawRectangle")
-export declare function ImageDrawRectangle(dst: Image, posX: i32, posY: i32, width: i32, height: i32, color: Color): void
+export declare function ImageDrawRectangle(dst: u32, posX: i32, posY: i32, width: i32, height: i32, color: Color): void
 
 // Draw rectangle within an image (Vector version)
 @external("env", "null0_ImageDrawRectangleV")
-export declare function ImageDrawRectangleV(dst: Image, position: Vector2, size: Vector2, color: Color): void
+export declare function ImageDrawRectangleV(dst: u32, position: Vector2, size: Vector2, color: Color): void
 
 // Draw rectangle within an image
 @external("env", "null0_ImageDrawRectangleRec")
-export declare function ImageDrawRectangleRec(dst: Image, rec: Rectangle, color: Color): void
+export declare function ImageDrawRectangleRec(dst: u32, rec: Rectangle, color: Color): void
 
 // Draw rectangle lines within an image
 @external("env", "null0_ImageDrawRectangleLines")
-export declare function ImageDrawRectangleLines(dst: Image, rec: Rectangle, thick: i32, color: Color): void
+export declare function ImageDrawRectangleLines(dst: u32, rec: Rectangle, thick: i32, color: Color): void
 
 // Draw a source image within a destination image (tint applied to source)
 @external("env", "null0_ImageDraw")
@@ -330,15 +333,15 @@ export declare function ImageDraw(dst: u32, src: Image, srcRec: Rectangle, dstRe
 
 // Draw text (using default font) within an image (destination)
 @external("env", "null0_ImageDrawText")
-declare function _ImageDrawText(dst: Image, font: Font, text: ArrayBuffer, posX: i32, posY: i32, fontSize: i32, color: Color): void
-export function ImageDrawText(dst: Image, font: Font, text: string, posX: i32, posY: i32, fontSize: i32, color: Color): void {
+declare function _ImageDrawText(dst: u32, font: Font, text: ArrayBuffer, posX: i32, posY: i32, fontSize: i32, color: Color): void
+export function ImageDrawText(dst: u32, font: Font, text: string, posX: i32, posY: i32, fontSize: i32, color: Color): void {
   return _ImageDrawText(dst, font, String.UTF8.encode(text, true), posX, posY, fontSize, color)
 }
 
 // Draw text (custom sprite font) within an image (destination)
 @external("env", "null0_ImageDrawTextEx")
-declare function _ImageDrawTextEx(dst: Image, font: Font, text: ArrayBuffer, position: Vector2, fontSize: float, spacing: float, tint: Color): void
-export function ImageDrawTextEx(dst: Image, font: Font, text: string, position: Vector2, fontSize: float, spacing: float, tint: Color): void {
+declare function _ImageDrawTextEx(dst: u32, font: Font, text: ArrayBuffer, position: Vector2, fontSize: float, spacing: float, tint: Color): void
+export function ImageDrawTextEx(dst: u32, font: Font, text: string, position: Vector2, fontSize: float, spacing: float, tint: Color): void {
   return _ImageDrawTextEx(dst, font, String.UTF8.encode(text, true), position, fontSize, spacing, tint)
 }
 
@@ -649,7 +652,7 @@ export declare function DrawRectangleRec(rec: Rectangle, color: Color): void
 export declare function DrawRectangleLines(rec: Rectangle, thick: i32, color: Color): void
 
 // Draw a source image within a destination image (tint applied to source)
-@external("env", "null0_Draw")
-export declare function Draw(src: u32, srcRec: Rectangle, dstRec: Rectangle, tint: Color): void
+@external("env", "null0_DrawImage")
+export declare function DrawImage(src: Image, srcRec: Rectangle, dstRec: Rectangle, tint: Color): void
 
 

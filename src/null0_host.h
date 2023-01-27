@@ -51,9 +51,23 @@ Image* screenBuffer;
 
 // TODO: I'm sure this is not the right way to hold on to these.
 Image resourceImages[1024];
-unsigned int imageCounter = 0;
+uint32_t imageCounter = 0;
 
 struct timeval now, start;
+
+typedef struct Null0Image {
+  uint32_t id;
+  int width;
+  int height;
+  int format;
+} Null0Image;
+
+typedef struct Null0Texture {
+  uint32_t id;
+  int width;
+  int height;
+  int format;
+} Null0Texture;
 
 // Get pointer to extension for a filename string (includes the dot: .png)
 const char* GetFileExtension(const char* fileName) {
@@ -289,19 +303,25 @@ static m3ApiRawFunction(null0_DrawRectangle) {
 
 // Load image from file into CPU memory (RAM)
 static m3ApiRawFunction(null0_LoadImage) {
-  m3ApiReturnType(uint32_t);
+  m3ApiReturnType(struct Null0Image*);
   m3ApiGetArgMem(const char*, fileName);
   resourceImages[imageCounter++] = LoadImageFromPhysFS(fileName);
-  m3ApiReturn(imageCounter);
+  struct Null0Image out;
+  out.id = imageCounter;
+  out.width = resourceImages[imageCounter].width;
+  out.height = resourceImages[imageCounter].height;
+  out.format = resourceImages[imageCounter].format;
+  m3ApiReturn(&out);
 }
 
 // Draw a source image within a destination image (tint applied to source)
-static m3ApiRawFunction(null0_Draw) {
-  m3ApiGetArg(uint32_t, src);
+static m3ApiRawFunction(null0_DrawImage) {
+  m3ApiGetArgMem(struct Null0Image*, image);
   m3ApiGetArgMem(Rectangle*, srcRec);
   m3ApiGetArgMem(Rectangle*, dstRec);
   m3ApiGetArgMem(Color*, tint);
-  ImageDraw(screenBuffer, resourceImages[src], *srcRec, *dstRec, *tint);
+  printf("%d: %dx%d\n", image->id, image->width, image->height);
+  // ImageDraw(screenBuffer, resourceImages[image->id], *srcRec, *dstRec, *tint);
   m3ApiSuccess();
 }
 
@@ -1388,7 +1408,7 @@ bool null0_start(const void* wasmBuffer, size_t byteLength) {
   m3_LinkRawFunction(module, "env", "null0_DrawLine", "v(iiiii)", &null0_DrawLine);
   m3_LinkRawFunction(module, "env", "null0_DrawRectangle", "v(iiiii)", &null0_DrawRectangle);
   m3_LinkRawFunction(module, "env", "null0_LoadImage", "*(*)", &null0_LoadImage);
-  m3_LinkRawFunction(module, "env", "null0_Draw", "v(****)", &null0_Draw);
+  m3_LinkRawFunction(module, "env", "null0_DrawImage", "v(****)", &null0_DrawImage);
 
   // m3_LinkRawFunction(module, "env", "null0_LoadImageAnim", "i(ii)", &null0_LoadImageAnim);
   // m3_LinkRawFunction(module, "env", "null0_UnloadImage", "v(i)", &null0_UnloadImage);

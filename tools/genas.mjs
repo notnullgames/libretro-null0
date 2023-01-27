@@ -119,12 +119,16 @@ ${ asParams ? '' : 'export '}declare function ${name}(${getParams(func.params)})
 
 // similar to outputFunction, but strip ^Image for screen-level functions
 function outputAlias(func) {
-  return outputFunction({
+  const alias = {
     ...func,
     name: func.name.replace(/^Image/, ''),
     comment: func.comment.replace('within an image', 'on the screen'),
     params: func.params.slice(1)
-  })
+  }
+  if (alias.name === 'Draw') {
+    alias.name = 'DrawImage'
+  }
+  return outputFunction(alias)
 }
 
 let out = `// null0 assemblyscript header, generated ${(new Date()).toISOString()}
@@ -176,10 +180,9 @@ export class GlyphInfo {
 
 @unmanaged
 export class Image {
-  data: ArrayBuffer
+  id: u32
   width: i32 
   height: i32 
-  mipmaps: i32 
   format: i32 
 }
 
@@ -188,7 +191,6 @@ export class Texture {
   id: u32
   width: i32
   height: i32
-  mipmaps: i32
   format: i32
 }
 
