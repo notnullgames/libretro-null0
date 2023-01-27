@@ -301,7 +301,6 @@ static m3ApiRawFunction(null0_Draw) {
   m3ApiGetArgMem(Rectangle*, srcRec);
   m3ApiGetArgMem(Rectangle*, dstRec);
   m3ApiGetArgMem(Color*, tint);
-  // printf("(%f, %f, %f, %f) (%f, %f, %f, %f) (%d, %d, %d %d)\n", srcRec->x, srcRec->y, srcRec->width, srcRec->height, dstRec->x, dstRec->y, dstRec->width, dstRec->height, tint->r, tint->g, tint->b, tint->a);
   ImageDraw(screenBuffer, resourceImages[src], *srcRec, *dstRec, *tint);
   m3ApiSuccess();
 }

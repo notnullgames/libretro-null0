@@ -13,7 +13,6 @@ const destRec = sourceSize
 export function load(): void {
   log('Hello, from draw load().')
   image = LoadImage("null0.png")
-  log("image: " + image.toString())
 }
 
 // called per-frame to update screen
