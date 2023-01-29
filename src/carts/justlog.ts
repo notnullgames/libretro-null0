@@ -4,3 +4,12 @@
 export function load(): void {
   log('Hello, from justlog load().')
 }
+
+// called to update screen
+export function update(dt: f64): void {
+}
+
+// called when the cart is unloaded
+export function unload(): void {
+  log('Ok, bye.')
+}

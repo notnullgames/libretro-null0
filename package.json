@@ -10,12 +10,7 @@
     "build:files": "node tools/build.mjs files",
     "build:http": "node tools/build.mjs http",
     "build:justlog": "node tools/build.mjs justlog",
-    "build:random": "node tools/build.mjs random",
-
-    "gen:json": "node tools/genjson.mjs > tools/api.json",
-    "gen:as": "NODE_NO_WARNINGS=1 node tools/genas.mjs > src/carts/null0.ts",
-    "gen:host": "NODE_NO_WARNINGS=1 node tools/genhost.mjs > src/null0_host.h",
-    "test": "node src/test.js"
+    "build:random": "node tools/build.mjs random"
   },
   "devDependencies": {
     "archiver": "^5.3.1",

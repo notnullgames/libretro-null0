@@ -7,3 +7,8 @@ export function load(): void {
 export function update(dt: i32): void {
   log(Math.random().toString())
 }
+
+// called when the cart is unloaded
+export function unload(): void {
+  log('Ok, bye.')
+}

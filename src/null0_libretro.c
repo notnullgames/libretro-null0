@@ -1,249 +1,181 @@
-#include <stdarg.h>   // va_list
-#include <stdbool.h>  // bool
-#include <stdio.h>    // stderr
-#include <stdlib.h>   // free(), malloc()
+#include "null0.h"
+
+#include <math.h>
+#include <stdarg.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "libretro.h"
-#include "null0_host.h"
 
-typedef struct Core {
-  Image backBuffer;
-  Image frontBuffer;
+static uint32_t* frame_buf;
+static struct retro_log_callback logging;
+static retro_log_printf_t log_cb;
 
-  retro_video_refresh_t video_cb;
-  retro_audio_sample_t audio_cb;
-  retro_audio_sample_batch_t audio_batch_cb;
-  retro_input_poll_t input_poll_cb;
-  retro_input_state_t input_state_cb;
-
-} Core;
-
-retro_environment_t environ_cb;
-Core* core;
-
-Core* GetCoreHandle() {
-  return core;
-}
-
-bool IsCoreReady() {
-  return core != NULL;
-}
-
-void CloseCore() {
-  if (!IsCoreReady()) {
-    return;
-  }
-
-  UnloadImage(core->backBuffer);
-  UnloadImage(core->frontBuffer);
-
-  free(core);
-  core = NULL;
-}
-
-int GetScreenWidth() {
-  if (IsCoreReady()) {
-    return core->backBuffer.width;
-  }
-
-  return 0;
-}
-
-int GetScreenHeight() {
-  if (IsCoreReady()) {
-    return core->backBuffer.height;
-  }
-
-  return 0;
-}
-
-bool InitCore() {
-  // Make sure the core is available to be loaded.
-  CloseCore();
-
-  core = malloc(sizeof(Core));
-
-  // Initialize the screen buffers. Back as RGBA8888, front as RGB565.
-  int width = 320;
-  int height = 240;
-  core->backBuffer = GenImageColor(width, height, RED);  // RGBA8888
-  core->frontBuffer = GenImageColor(width, height, BLUE);
-  ImageFormat(&core->frontBuffer, PIXELFORMAT_UNCOMPRESSED_R5G6B5);
+static void fallback_log(enum retro_log_level level, const char* fmt, ...) {
+  (void)level;
+  va_list va;
+  va_start(va, fmt);
+  vfprintf(stderr, fmt, va);
+  va_end(va);
 }
 
 void retro_init(void) {
-  InitCore();
+  frame_buf = calloc(320 * 240, sizeof(uint32_t));
 }
 
 void retro_deinit(void) {
-  CloseCore();
+  free(frame_buf);
+  frame_buf = NULL;
 }
 
 unsigned retro_api_version(void) {
   return RETRO_API_VERSION;
 }
 
-void retro_set_controller_port_device(unsigned port, unsigned device) {}
+void retro_set_controller_port_device(unsigned port, unsigned device) {
+  log_cb(RETRO_LOG_INFO, "Plugging device %u into port %u.\n", device, port);
+}
 
 void retro_get_system_info(struct retro_system_info* info) {
   memset(info, 0, sizeof(*info));
   info->library_name = "null0";
-  info->library_version = "0.0.1";
+  info->library_version = "v1";
   info->need_fullpath = false;
-  info->valid_extensions = "null0|wasm|zip";
-  info->block_extract = false;
+  info->valid_extensions = NULL;  // Anything is fine, we don't care.
 }
 
-void retro_get_system_av_info(struct retro_system_av_info* info) {
-  if (!IsCoreReady()) {
-    return;
-  }
+static retro_video_refresh_t video_cb;
+static retro_audio_sample_t audio_cb;
+static retro_audio_sample_batch_t audio_batch_cb;
+static retro_environment_t environ_cb;
+static retro_input_poll_t input_poll_cb;
+static retro_input_state_t input_state_cb;
 
-  info->geometry.base_width = GetScreenWidth();
-  info->geometry.base_height = GetScreenHeight();
-  info->geometry.max_width = GetScreenWidth();
-  info->geometry.max_height = GetScreenHeight();
-  info->geometry.aspect_ratio = (float)GetScreenWidth() / (float)GetScreenHeight();
-  info->timing.fps = 60.0;
-  info->timing.sample_rate = 44100.0f;
+void retro_get_system_av_info(struct retro_system_av_info* info) {
+  float aspect = 4.0f / 3.0f;
+
+  info->timing = (struct retro_system_timing){
+      .fps = 60.0,
+      .sample_rate = 0.0,
+  };
+
+  info->geometry = (struct retro_game_geometry){
+      .base_width = 320,
+      .base_height = 240,
+      .max_width = 320,
+      .max_height = 240,
+      .aspect_ratio = aspect,
+  };
 }
 
 void retro_set_environment(retro_environment_t cb) {
   environ_cb = cb;
-  bool supports_no_game = true;
-  cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &supports_no_game);
+
+  bool no_content = true;
+  cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_content);
+
+  if (cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &logging))
+    log_cb = logging.log;
+  else
+    log_cb = fallback_log;
 }
 
 void retro_set_audio_sample(retro_audio_sample_t cb) {
-  if (!IsCoreReady()) {
-    return;
-  }
-
-  core->audio_cb = cb;
+  audio_cb = cb;
 }
 
 void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb) {
-  if (!IsCoreReady()) {
-    return;
-  }
-
-  core->audio_batch_cb = cb;
+  audio_batch_cb = cb;
 }
 
 void retro_set_input_poll(retro_input_poll_t cb) {
-  if (!IsCoreReady()) {
-    return;
-  }
-
-  core->input_poll_cb = cb;
+  input_poll_cb = cb;
 }
 
 void retro_set_input_state(retro_input_state_t cb) {
-  if (!IsCoreReady()) {
-    return;
-  }
-
-  core->input_state_cb = cb;
+  input_state_cb = cb;
 }
 
 void retro_set_video_refresh(retro_video_refresh_t cb) {
-  if (!IsCoreReady()) {
-    return;
-  }
-
-  core->video_cb = cb;
+  video_cb = cb;
 }
+
+static unsigned x_coord;
+static unsigned y_coord;
+static int mouse_rel_x;
+static int mouse_rel_y;
 
 void retro_reset(void) {
-  fprintf(stderr, "retro_reset\n");
+  x_coord = 0;
+  y_coord = 0;
 }
 
-void PollInputEvents(void) {
-  // TODO: Update the input state
+static void update_input(void) {
+  input_poll_cb();
+  if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)) {
+    /* stub */
+  }
 }
 
-static void check_variables(void) {}
+static void render_checkered(void) {
+  uint32_t* buf = frame_buf;
+  unsigned stride = 320;
+  uint32_t color_r = 0xff << 16;
+  uint32_t color_g = 0xff << 8;
+  uint32_t* line = buf;
 
-static void audio_callback(void) {
-}
-
-static void audio_set_state(bool enable) {
-  (void)enable;
-}
-
-void ClearBackground(Color color) {
-  ImageClearBackground(&core->backBuffer, color);
-}
-
-void UpdateGame() {
-  if (!IsCoreReady()) {
-    return;
+  for (unsigned y = 0; y < 240; y++, line += stride) {
+    unsigned index_y = ((y - y_coord) >> 4) & 1;
+    for (unsigned x = 0; x < 320; x++) {
+      unsigned index_x = ((x - x_coord) >> 4) & 1;
+      line[x] = (index_y ^ index_x) ? color_r : color_g;
+    }
   }
 
-  null0_update();
+  for (unsigned y = mouse_rel_y - 5; y <= mouse_rel_y + 5; y++)
+    for (unsigned x = mouse_rel_x - 5; x <= mouse_rel_x + 5; x++)
+      buf[y * stride + x] = 0xff;
+
+  video_cb(buf, 320, 240, stride << 2);
+}
+
+static void check_variables(void) {
+}
+
+static void audio_callback(void) {
+  audio_cb(0, 0);
 }
 
 void retro_run(void) {
-  if (!IsCoreReady()) {
-    return;
-  }
-  PollInputEvents();
+  update_input();
+  // render_checkered();
+  null0_update();
+  video_cb(canvas->data, 320, 240, 320 << 2);
+  audio_callback();
 
   bool updated = false;
-  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated) {
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
     check_variables();
-  }
-
-  UpdateGame();
-  // Render the backbuffer to the front buffer.
-  Rectangle screenRect = {0, 0, core->frontBuffer.width, core->frontBuffer.height};
-  ImageDraw(&core->frontBuffer, core->backBuffer, screenRect, screenRect, WHITE);
-
-  size_t pitch = (size_t)GetPixelDataSize(core->frontBuffer.width, 1, core->frontBuffer.format);
-  core->video_cb((const void*)core->frontBuffer.data, core->frontBuffer.width, core->frontBuffer.height, pitch);
-}
-
-bool LoadGame(const void* data, size_t size, const char* path) {
-  if (!IsCoreReady()) {
-    return false;
-  }
-
-  // Load the game.
-  return null0_load(&core->backBuffer, data, size, path);
-}
-
-void UnloadGame() {
-  if (!IsCoreReady()) {
-    return;
-  }
-
-  // Unload the game
-  null_unload();
 }
 
 bool retro_load_game(const struct retro_game_info* info) {
-  if (!IsCoreReady()) {
-    return false;
-  }
-  // The pixel format is the same as the front buffer.
-  enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
+  enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
   if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt)) {
-    fprintf(stderr, "RGB565 isn't supported\n");
+    log_cb(RETRO_LOG_INFO, "XRGB8888 is not supported.\n");
     return false;
   }
 
   check_variables();
 
-  if (info) {
-    return LoadGame(info->data, info->size, info->path);
-  } else {
-    return LoadGame(NULL, 0, "");
-  }
+  int status = null0_load_cart_wasm((char*)info->path, (u8*)info->data, (u32)info->size);
+
+  (void)info;
+  return true;
 }
 
 void retro_unload_game(void) {
-  UnloadGame();
 }
 
 unsigned retro_get_region(void) {
@@ -251,19 +183,35 @@ unsigned retro_get_region(void) {
 }
 
 bool retro_load_game_special(unsigned type, const struct retro_game_info* info, size_t num) {
-  return false;
+  if (type != 0x200)
+    return false;
+  if (num != 2)
+    return false;
+  return retro_load_game(NULL);
 }
 
 size_t retro_serialize_size(void) {
-  return 0;
+  return 2;
 }
 
 bool retro_serialize(void* data_, size_t size) {
-  return false;
+  if (size < 2)
+    return false;
+
+  uint8_t* data = data_;
+  data[0] = x_coord;
+  data[1] = y_coord;
+  return true;
 }
 
 bool retro_unserialize(const void* data_, size_t size) {
-  return false;
+  if (size < 2)
+    return false;
+
+  const uint8_t* data = data_;
+  x_coord = data[0] & 31;
+  y_coord = data[1] & 31;
+  return true;
 }
 
 void* retro_get_memory_data(unsigned id) {
