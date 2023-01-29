@@ -45,7 +45,7 @@ const options = [
   '--exportRuntime',
   '--optimize',
   '--stats',
-  `src/carts/${target}.ts`,
+  `src/carts/${target}/main.ts`,
   '-o', `build/${target}.wasm`,
   '-t', `build/${target}.wat`,
   '--bindings', 'esm'
@@ -72,8 +72,8 @@ if (error) {
 mkdir('-p', `build/${target}`)
 cp(`build/${target}.wasm`, `build/${target}/main.wasm`)
 
-if (test('-d', `src/carts/assets_${target}/`)) {
-  cp('-R', `src/carts/assets_${target}/*`, `build/${target}/`)
+if (test('-d', `src/carts/${target}/assets`)) {
+  cp('-R', `src/carts/${target}/assets/*`, `build/${target}/`)
 }
 
 await zip(`build/${target}`, `build/${target}.null0`)

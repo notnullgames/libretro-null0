@@ -15,7 +15,6 @@ npm run build:host
 npm run build:draw
 npm run build:errors
 npm run build:files
-npm run build:http
 npm run build:justlog
 npm run build:random
 

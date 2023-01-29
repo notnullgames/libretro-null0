@@ -5,12 +5,11 @@
   "scripts": {
     "build:host": "cmake -B build . && make -C build",
     
-    "build:draw": "node tools/build.mjs draw",
-    "build:errors": "node tools/build.mjs errors",
-    "build:files": "node tools/build.mjs files",
-    "build:http": "node tools/build.mjs http",
-    "build:justlog": "node tools/build.mjs justlog",
-    "build:random": "node tools/build.mjs random"
+    "build:draw": "node tools/build_as.mjs draw",
+    "build:errors": "node tools/build_as.mjs errors",
+    "build:files": "node tools/build_as.mjs files",
+    "build:justlog": "node tools/build_as.mjs justlog",
+    "build:random": "node tools/build_as.mjs random"
   },
   "devDependencies": {
     "archiver": "^5.3.1",
