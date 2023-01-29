@@ -50,25 +50,6 @@ pntr_image* canvas;
 u8 currentImage = 0;
 pntr_image* allImages[255];
 
-// until this PR gets in: https://github.com/RobLoach/pntr/pull/4
-void pntr_draw_circle(pntr_image* dst, int centerX, int centerY, int radius, pntr_color color) {
-  int largestX = radius;
-  int r2 = radius * radius;
-  for (int y = 0; y <= radius; ++y) {
-    int y2 = y * y;
-    for (int x = largestX; x >= 0; --x) {
-      if ((x * x) + (y2) <= (r2)) {
-        pntr_draw_horizontal_line_unsafe(dst, centerX - x, centerY + y, x, color);
-        pntr_draw_horizontal_line_unsafe(dst, centerX - x, centerY - y, x, color);
-        pntr_draw_horizontal_line_unsafe(dst, centerX, centerY + y, x, color);
-        pntr_draw_horizontal_line_unsafe(dst, centerX, centerY - y, x, color);
-        largestX = x;
-        break;
-      }
-    }
-  }
-}
-
 bool FileExistsInPhysFS(const char* fileName) {
   PHYSFS_Stat stat;
   if (PHYSFS_stat(fileName, &stat) == 0) {
