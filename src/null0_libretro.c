@@ -76,10 +76,11 @@ void retro_set_environment(retro_environment_t cb) {
   bool no_content = true;
   cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_content);
 
-  if (cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &logging))
+  if (cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &logging)) {
     log_cb = logging.log;
-  else
+  } else {
     log_cb = fallback_log;
+  }
 }
 
 void retro_set_audio_sample(retro_audio_sample_t cb) {
@@ -119,45 +120,19 @@ static void update_input(void) {
   }
 }
 
-static void render_checkered(void) {
-  uint32_t* buf = frame_buf;
-  unsigned stride = 320;
-  uint32_t color_r = 0xff << 16;
-  uint32_t color_g = 0xff << 8;
-  uint32_t* line = buf;
-
-  for (unsigned y = 0; y < 240; y++, line += stride) {
-    unsigned index_y = ((y - y_coord) >> 4) & 1;
-    for (unsigned x = 0; x < 320; x++) {
-      unsigned index_x = ((x - x_coord) >> 4) & 1;
-      line[x] = (index_y ^ index_x) ? color_r : color_g;
-    }
-  }
-
-  for (unsigned y = mouse_rel_y - 5; y <= mouse_rel_y + 5; y++)
-    for (unsigned x = mouse_rel_x - 5; x <= mouse_rel_x + 5; x++)
-      buf[y * stride + x] = 0xff;
-
-  video_cb(buf, 320, 240, stride << 2);
-}
-
 static void check_variables(void) {
-}
-
-static void audio_callback(void) {
-  audio_cb(0, 0);
 }
 
 void retro_run(void) {
   update_input();
-  // render_checkered();
   null0_update();
-  video_cb(canvas->data, 320, 240, 320 << 2);
-  audio_callback();
+  video_cb(null0_screen_image->data, 320, 240, 320 << 2);
+  audio_cb(null0_audio_left, null0_audio_right);
 
   bool updated = false;
-  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated) {
     check_variables();
+  }
 }
 
 bool retro_load_game(const struct retro_game_info* info) {

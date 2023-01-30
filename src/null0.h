@@ -4,6 +4,12 @@
 
 // TODO: add WASI adapters, like log, etc - see https://github.com/wasm3/wasm3/blob/main/docs/Cookbook.md
 
+// TODO: finish sound https://github.com/mackron/miniaudio/blob/master/examples/engine_sdl.c
+
+// TODO: add mod/xm support
+
+// TODO: sf2/midi?
+
 // TODO: check which of these I am actually using
 #include <dirent.h>
 #include <fcntl.h>
@@ -23,6 +29,13 @@
 #include "m3_env.h"
 #include "physfs.h"
 #include "wasm3.h"
+
+#define MA_NO_DEVICE_IO
+#define MINIAUDIO_IMPLEMENTATION
+#include "miniaudio.h"
+
+static ma_engine g_engine;
+static ma_sound g_sound;
 
 enum Null0CartType {
   Null0CartTypeInvalid,
@@ -46,9 +59,12 @@ static M3Function* cart_unload;
 
 struct timespec startTime;
 struct timespec nowTime;
-pntr_image* canvas;
+pntr_image* null0_screen_image;
 u8 currentImage = 0;
 pntr_image* allImages[255];
+
+int null0_audio_left = 0;
+int null0_audio_right = 0;
 
 bool FileExistsInPhysFS(const char* fileName) {
   PHYSFS_Stat stat;
@@ -151,7 +167,7 @@ static m3ApiRawFunction(null0_seed) {
 
 static m3ApiRawFunction(null0_clear_screen) {
   m3ApiGetArg(u8, destination);
-  m3ApiGetArgMem(pntr_color_t*, color);
+  m3ApiGetArgMem(pntr_color*, color);
 
   pntr_image* c = pntr_gen_image_color(320, 240, *color);
   pntr_draw_image(allImages[destination], c, 0, 0);
@@ -164,7 +180,7 @@ static m3ApiRawFunction(null0_gen_image_color) {
   m3ApiReturnType(u8);
   m3ApiGetArg(u8, width);
   m3ApiGetArg(u8, height);
-  m3ApiGetArgMem(pntr_color_t*, color);
+  m3ApiGetArgMem(pntr_color*, color);
 
   currentImage++;
   allImages[currentImage] = pntr_gen_image_color(width, height, *color);
@@ -188,7 +204,7 @@ static m3ApiRawFunction(null0_draw_pixel) {
   m3ApiGetArg(u8, destination);
   m3ApiGetArg(int, x);
   m3ApiGetArg(int, y);
-  m3ApiGetArgMem(pntr_color_t*, color);
+  m3ApiGetArgMem(pntr_color*, color);
 
   pntr_draw_pixel(allImages[destination], x, y, *color);
 
@@ -201,7 +217,7 @@ static m3ApiRawFunction(null0_draw_rectangle) {
   m3ApiGetArg(int, y);
   m3ApiGetArg(int, height);
   m3ApiGetArg(int, width);
-  m3ApiGetArgMem(pntr_color_t*, color);
+  m3ApiGetArgMem(pntr_color*, color);
 
   pntr_draw_rectangle(allImages[destination], x, y, height, width, *color);
 
@@ -213,7 +229,7 @@ static m3ApiRawFunction(null0_draw_circle) {
   m3ApiGetArg(int, centerX);
   m3ApiGetArg(int, centerY);
   m3ApiGetArg(int, radius);
-  m3ApiGetArgMem(pntr_color_t*, color);
+  m3ApiGetArgMem(pntr_color*, color);
 
   pntr_draw_circle(allImages[destination], centerX, centerY, radius, *color);
 
@@ -244,6 +260,8 @@ static m3ApiRawFunction(null0_file_read) {
   char* buffer = "Hello from C host";
 
   printf("TODO: read %s\n", fileName);
+
+  m3ApiReturn(0);
 }
 
 // given a filename and some bytes (at least 4) this will tell you what type the cart is (dir/wasm/zip/invalid)
@@ -282,7 +300,12 @@ void null0_unload() {
   if (cart_unload) {
     null0_check_wasm3(m3_CallV(cart_unload));
   }
-  pntr_unload_image(canvas);
+  pntr_unload_image(null0_screen_image);
+}
+
+void miniaudio_data_callback(void* pUserData, ma_uint8* pBuffer, int bufferSizeInBytes) {
+  ma_uint32 bufferSizeInFrames = (ma_uint32)bufferSizeInBytes / ma_get_bytes_per_frame(ma_format_f32, ma_engine_get_channels(&g_engine));
+  ma_engine_read_pcm_frames(&g_engine, pBuffer, bufferSizeInFrames, NULL);
 }
 
 // given a filename, byte-array and length of cart file, this will load up wasm environment for it
@@ -352,8 +375,22 @@ int null0_load_cart_wasm(char* filename, u8* wasmBuffer, u32 byteLength) {
   null0_check_wasm3_is_ok();
 
   clock_gettime(CLOCK_MONOTONIC_RAW, &startTime);
-  canvas = pntr_gen_image_color(320, 240, PNTR_BLACK);
-  allImages[0] = canvas;
+  null0_screen_image = pntr_gen_image_color(320, 240, PNTR_BLACK);
+  allImages[0] = null0_screen_image;
+
+  ma_result result;
+  ma_engine_config engineConfig;
+
+  engineConfig = ma_engine_config_init();
+  engineConfig.noDevice = MA_TRUE;
+  engineConfig.channels = 2;
+  engineConfig.sampleRate = 48000;
+
+  result = ma_engine_init(&engineConfig, &g_engine);
+  if (result != MA_SUCCESS) {
+    fprintf(stderr, "Failed to initialize audio engine.\n");
+    return 1;
+  }
 
   if (cart_load) {
     null0_check_wasm3(m3_CallV(cart_load));
