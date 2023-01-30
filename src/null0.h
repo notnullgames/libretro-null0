@@ -63,9 +63,6 @@ pntr_image* null0_screen_image;
 u8 currentImage = 0;
 pntr_image* allImages[255];
 
-int null0_audio_left = 0;
-int null0_audio_right = 0;
-
 bool FileExistsInPhysFS(const char* fileName) {
   PHYSFS_Stat stat;
   if (PHYSFS_stat(fileName, &stat) == 0) {
@@ -286,6 +283,12 @@ enum Null0CartType null0_get_cart_type(char* filename, u8* bytes, u32 byteLength
   }
 }
 
+// call this to get current sound loaded into buffer
+void null0_get_audio(ma_uint8* pBuffer, int bufferSizeInBytes) {
+  ma_uint32 bufferSizeInFrames = (ma_uint32)bufferSizeInBytes / ma_get_bytes_per_frame(ma_format_f32, ma_engine_get_channels(&g_engine));
+  ma_engine_read_pcm_frames(&g_engine, pBuffer, bufferSizeInFrames, NULL);
+}
+
 // call cart's update(): run this in your game-loop
 void null0_update() {
   clock_gettime(CLOCK_MONOTONIC_RAW, &nowTime);
@@ -301,11 +304,6 @@ void null0_unload() {
     null0_check_wasm3(m3_CallV(cart_unload));
   }
   pntr_unload_image(null0_screen_image);
-}
-
-void miniaudio_data_callback(void* pUserData, ma_uint8* pBuffer, int bufferSizeInBytes) {
-  ma_uint32 bufferSizeInFrames = (ma_uint32)bufferSizeInBytes / ma_get_bytes_per_frame(ma_format_f32, ma_engine_get_channels(&g_engine));
-  ma_engine_read_pcm_frames(&g_engine, pBuffer, bufferSizeInFrames, NULL);
 }
 
 // given a filename, byte-array and length of cart file, this will load up wasm environment for it

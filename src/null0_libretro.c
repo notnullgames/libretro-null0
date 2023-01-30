@@ -58,7 +58,7 @@ void retro_get_system_av_info(struct retro_system_av_info* info) {
 
   info->timing = (struct retro_system_timing){
       .fps = 60.0,
-      .sample_rate = 0.0,
+      .sample_rate = 48000.0f,
   };
 
   info->geometry = (struct retro_game_geometry){
@@ -123,11 +123,20 @@ static void update_input(void) {
 static void check_variables(void) {
 }
 
+// TODO: temp var for testing sound
+static unsigned phase;
+
 void retro_run(void) {
   update_input();
   null0_update();
   video_cb(null0_screen_image->data, 320, 240, 320 << 2);
-  audio_cb(null0_audio_left, null0_audio_right);
+
+  // TODO: null0_get_audio(ma_uint8* pBuffer, int bufferSizeInBytes)
+  for (unsigned i = 0; i < 48000 / 60; i++, phase++) {
+    int16_t val = 0x800 * sinf(2.0f * M_PI * phase * 300.0f / 48000.0f);
+    audio_cb(val, val);
+  }
+  phase %= 100;
 
   bool updated = false;
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated) {
