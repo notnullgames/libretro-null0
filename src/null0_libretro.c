@@ -131,13 +131,6 @@ void retro_run(void) {
   null0_update();
   video_cb(null0_screen_image->data, 320, 240, 320 << 2);
 
-  // TODO: null0_get_audio(ma_uint8* pBuffer, int bufferSizeInBytes)
-  for (unsigned i = 0; i < 48000 / 60; i++, phase++) {
-    int16_t val = 0x800 * sinf(2.0f * M_PI * phase * 300.0f / 48000.0f);
-    audio_cb(val, val);
-  }
-  phase %= 100;
-
   bool updated = false;
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated) {
     check_variables();

@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#define PNTR_PIXELFORMAT_ARGB
 #define PNTR_IMPLEMENTATION
 #include "pntr.h"
 
@@ -281,12 +282,6 @@ enum Null0CartType null0_get_cart_type(char* filename, u8* bytes, u32 byteLength
   } else {
     return Null0CartTypeInvalid;
   }
-}
-
-// call this to get current sound loaded into buffer
-void null0_get_audio(ma_uint8* pBuffer, int bufferSizeInBytes) {
-  ma_uint32 bufferSizeInFrames = (ma_uint32)bufferSizeInBytes / ma_get_bytes_per_frame(ma_format_f32, ma_engine_get_channels(&g_engine));
-  ma_engine_read_pcm_frames(&g_engine, pBuffer, bufferSizeInFrames, NULL);
 }
 
 // call cart's update(): run this in your game-loop
