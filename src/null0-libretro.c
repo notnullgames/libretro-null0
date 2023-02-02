@@ -29,6 +29,12 @@ bool retro_load_game(const struct retro_game_info* info) {
 
   check_variables();
 
+  if (info != NULL) {
+    null0_load_memory((char*)info->path, (u8*)info->data, (u32)info->size);
+  } else {
+    null0_load_empty();
+  }
+
   (void)info;
   return true;
 }
@@ -38,7 +44,9 @@ void retro_run(void) {
   if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)) {
   }
 
-  // video_cb(buf, 320, 240, 320 << 2);
+  null0_update();
+
+  video_cb(null0_state.images[0]->data, 320, 240, 320 << 2);
   // audio_batch_cb(buff, size)
 
   bool updated = false;
@@ -48,6 +56,7 @@ void retro_run(void) {
 }
 
 void retro_unload_game(void) {
+  null0_unload();
 }
 
 void retro_init(void) {
