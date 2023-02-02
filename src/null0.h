@@ -17,6 +17,7 @@
 
 #include "m3_env.h"
 #include "physfs.h"
+#include "rl_config.h"
 #include "rl_sound.h"
 #include "wasm3.h"
 
