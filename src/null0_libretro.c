@@ -1,211 +1,177 @@
-#include "null0.h"
-
-#include <math.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdio.h>
+#include<stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include <math.h>
 
 #include "libretro.h"
+#include <audio/audio_mixer.h>
 
-static uint32_t* frame_buf;
-static struct retro_log_callback logging;
-static retro_log_printf_t log_cb;
+#define BUFSIZE 44100/60
 
-static void fallback_log(enum retro_log_level level, const char* fmt, ...) {
-  (void)level;
-  va_list va;
-  va_start(va, fmt);
-  vfprintf(stderr, fmt, va);
-  va_end(va);
+retro_environment_t environ_cb            = NULL;
+retro_video_refresh_t video_cb            = NULL;
+retro_audio_sample_t audio_cb             = NULL;
+retro_audio_sample_batch_t audio_batch_cb = NULL;
+retro_input_poll_t poller_cb              = NULL;
+retro_input_state_t input_state_cb        = NULL;
+
+#ifndef EXTERNC
+#ifdef __cplusplus
+#define EXTERNC extern "C"
+#else
+#define EXTERNC
+#endif
+#endif
+
+#ifndef EXPORT
+#if defined(CPPCLI)
+#define EXPORT EXTERNC
+#elif defined(_WIN32)
+#define EXPORT EXTERNC __declspec(dllexport)
+#else
+#define EXPORT EXTERNC __attribute__((visibility("default")))
+#endif
+#endif
+
+EXPORT void retro_set_video_refresh(retro_video_refresh_t cb)
+{
+   video_cb = cb;
 }
 
-void retro_init(void) {
-  frame_buf = calloc(320 * 240, sizeof(uint32_t));
+EXPORT void retro_set_audio_sample(retro_audio_sample_t cb)
+{
+   audio_cb = cb;
 }
 
-void retro_deinit(void) {
-  free(frame_buf);
-  frame_buf = NULL;
+EXPORT void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb)
+{
+   audio_batch_cb = cb;
 }
 
-unsigned retro_api_version(void) {
-  return RETRO_API_VERSION;
+EXPORT void retro_set_input_poll(retro_input_poll_t cb)
+{
+   poller_cb = cb;
 }
 
-void retro_set_controller_port_device(unsigned port, unsigned device) {
-  log_cb(RETRO_LOG_INFO, "Plugging device %u into port %u.\n", device, port);
+EXPORT void retro_set_input_state(retro_input_state_t cb)
+{
+   input_state_cb = cb;
 }
 
-void retro_get_system_info(struct retro_system_info* info) {
-  memset(info, 0, sizeof(*info));
-  info->library_name = "null0";
-  info->library_version = "v1";
-  info->need_fullpath = false;
-  info->valid_extensions = NULL;  // Anything is fine, we don't care.
-}
-
-static retro_video_refresh_t video_cb;
-static retro_audio_sample_t audio_cb;
-static retro_audio_sample_batch_t audio_batch_cb;
-static retro_environment_t environ_cb;
-static retro_input_poll_t input_poll_cb;
-static retro_input_state_t input_state_cb;
-
-void retro_get_system_av_info(struct retro_system_av_info* info) {
-  float aspect = 4.0f / 3.0f;
-
-  info->timing = (struct retro_system_timing){
-      .fps = 60.0,
-      .sample_rate = 48000.0f,
-  };
-
-  info->geometry = (struct retro_game_geometry){
-      .base_width = 320,
-      .base_height = 240,
-      .max_width = 320,
-      .max_height = 240,
-      .aspect_ratio = aspect,
-  };
-}
-
-void retro_set_environment(retro_environment_t cb) {
+EXPORT void retro_set_environment(retro_environment_t cb)
+{
   environ_cb = cb;
+}
 
-  bool no_content = true;
-  cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_content);
+EXPORT void retro_deinit(void) {}
 
-  if (cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &logging)) {
-    log_cb = logging.log;
-  } else {
-    log_cb = fallback_log;
+EXPORT unsigned retro_api_version(void)
+{
+   return RETRO_API_VERSION;
+}
+
+EXPORT void retro_init(void)
+{
+   audio_mixer_init(44100);
+}
+
+EXPORT void retro_get_system_info(struct retro_system_info* info)
+{
+   const struct retro_system_info myinfo={ "WAV player", "v1", "wav", false, false };
+   memcpy(info, &myinfo, sizeof(myinfo));
+}
+
+EXPORT void retro_get_system_av_info(struct retro_system_av_info* info)
+{
+   const struct retro_system_av_info myinfo={
+      { 320, 240, 320, 240, 0.0 },
+      { 60.0, 44100 }
+   };
+   memcpy(info, &myinfo, sizeof(myinfo));
+}
+
+EXPORT void retro_reset(void)
+{
+}
+
+audio_mixer_sound_t *wavfile = NULL;
+audio_mixer_voice_t * voice1 = NULL;
+
+void convert_float_to_s16(int16_t *out,
+  const float *in, size_t samples)
+{
+  size_t i = 0;
+  for (; i < samples; i++)
+  {
+    int32_t val = (int32_t)(in[i] * 0x8000);
+    out[i] = (val > 0x7FFF) ? 0x7FFF :
+      (val < -0x8000 ? -0x8000 : (int16_t)val);
   }
 }
 
-void retro_set_audio_sample(retro_audio_sample_t cb) {
-  audio_cb = cb;
+EXPORT void retro_run(void)
+{
+   static uint16_t pixels[240][320];
+   float samples[BUFSIZE * 2] = { 0 };
+   int16_t samples2[2 * BUFSIZE] = { 0 };
+   audio_mixer_mix(samples, BUFSIZE, 1.0, false);
+   convert_float_to_s16(samples2,samples, 2 * BUFSIZE);
+   audio_batch_cb(samples2, BUFSIZE);
+
+   poller_cb();
+   memset(pixels, 0xFF, sizeof(pixels));
+   video_cb(pixels, 320, 240, sizeof(uint16_t) * 320);
 }
 
-void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb) {
-  audio_batch_cb = cb;
+EXPORT size_t retro_serialize_size(void)
+{
+   return 0;
 }
 
-void retro_set_input_poll(retro_input_poll_t cb) {
-  input_poll_cb = cb;
+EXPORT bool retro_serialize(void* data, size_t size)
+{
+  
+   return true;
 }
 
-void retro_set_input_state(retro_input_state_t cb) {
-  input_state_cb = cb;
+EXPORT bool retro_unserialize(const void* data, size_t size)
+{
+  
+   return true;
 }
 
-void retro_set_video_refresh(retro_video_refresh_t cb) {
-  video_cb = cb;
+EXPORT bool retro_load_game(const struct retro_game_info* game)
+{
+   enum retro_pixel_format rgb565 = RETRO_PIXEL_FORMAT_RGB565;
+
+   if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &rgb565))
+      return false;
+   wavfile = audio_mixer_load_wav(game->data,game->size);
+   voice1 = audio_mixer_play(wavfile,true,1.0,NULL);
+   return true;
 }
 
-static unsigned x_coord;
-static unsigned y_coord;
-static int mouse_rel_x;
-static int mouse_rel_y;
-
-void retro_reset(void) {
-  x_coord = 0;
-  y_coord = 0;
+EXPORT bool retro_load_game_special(unsigned game_type,
+      const struct retro_game_info* info, size_t num_info)
+{
+   return false;
 }
 
-static void update_input(void) {
-  input_poll_cb();
-  if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)) {
-    /* stub */
-  }
+EXPORT void retro_unload_game(void)
+{
+   audio_mixer_stop(voice1);
+   audio_mixer_destroy(wavfile);
+   audio_mixer_done();
 }
 
-static void check_variables(void) {
+EXPORT unsigned retro_get_region(void)
+{
+   return RETRO_REGION_NTSC;
 }
 
-// TODO: temp var for testing sound
-static unsigned phase;
-
-void retro_run(void) {
-  update_input();
-  null0_update();
-  video_cb(null0_screen_image->data, 320, 240, 320 << 2);
-
-  bool updated = false;
-  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated) {
-    check_variables();
-  }
-}
-
-bool retro_load_game(const struct retro_game_info* info) {
-  enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
-  if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt)) {
-    log_cb(RETRO_LOG_INFO, "XRGB8888 is not supported.\n");
-    return false;
-  }
-
-  check_variables();
-
-  int status = null0_load_cart_wasm((char*)info->path, (u8*)info->data, (u32)info->size);
-
-  (void)info;
-  return true;
-}
-
-void retro_unload_game(void) {
-  null0_unload();
-}
-
-unsigned retro_get_region(void) {
-  return RETRO_REGION_NTSC;
-}
-
-bool retro_load_game_special(unsigned type, const struct retro_game_info* info, size_t num) {
-  if (type != 0x200)
-    return false;
-  if (num != 2)
-    return false;
-  return retro_load_game(NULL);
-}
-
-size_t retro_serialize_size(void) {
-  return 2;
-}
-
-bool retro_serialize(void* data_, size_t size) {
-  if (size < 2)
-    return false;
-
-  uint8_t* data = data_;
-  data[0] = x_coord;
-  data[1] = y_coord;
-  return true;
-}
-
-bool retro_unserialize(const void* data_, size_t size) {
-  if (size < 2)
-    return false;
-
-  const uint8_t* data = data_;
-  x_coord = data[0] & 31;
-  y_coord = data[1] & 31;
-  return true;
-}
-
-void* retro_get_memory_data(unsigned id) {
-  (void)id;
-  return NULL;
-}
-
-size_t retro_get_memory_size(unsigned id) {
-  (void)id;
-  return 0;
-}
-
-void retro_cheat_reset(void) {}
-
-void retro_cheat_set(unsigned index, bool enabled, const char* code) {
-  (void)index;
-  (void)enabled;
-  (void)code;
-}
+EXPORT void* retro_get_memory_data(unsigned id)  { return NULL; }
+EXPORT size_t retro_get_memory_size(unsigned id) { return 0; }
+EXPORT void retro_cheat_reset(void) {}
+EXPORT void retro_cheat_set(unsigned index, bool enabled, const char* code) {}
+EXPORT void retro_set_controller_port_device(unsigned port, unsigned device) {}
