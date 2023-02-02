@@ -24,7 +24,7 @@ value must be used when rle-encoding images with rlrle.lua.
 
 /* The maximum number of saved pixels when blitting sprites. */
 #ifndef RL_BG_SAVE_SIZE
-#define RL_BG_SAVE_SIZE ( 64 * 1024 )
+#define RL_BG_SAVE_SIZE (64 * 1024)
 #endif
 
 /* The number of video frames per second. */
@@ -34,11 +34,11 @@ value must be used when rle-encoding images with rlrle.lua.
 
 /* The frequency of the mixed sound. */
 #ifndef RL_SAMPLE_RATE
-#define RL_SAMPLE_RATE 44100
+#define RL_SAMPLE_RATE 48000
 #endif
 
 /* Number of 16-bit stereo samples per frame. DO NOT CHANGE! */
-#define RL_SAMPLES_PER_FRAME ( RL_SAMPLE_RATE / RL_FRAME_RATE )
+#define RL_SAMPLES_PER_FRAME (RL_SAMPLE_RATE / RL_FRAME_RATE)
 
 /* Number of sounds that can play simultaneously.  */
 #define RL_MAX_VOICES 32
@@ -54,11 +54,10 @@ typedef struct
   unsigned sample_rate;
   unsigned samples_per_frame;
   unsigned max_voices;
-}
-rl_config_t;
+} rl_config_t;
 
 /* Do *not* use the macros above, use this function to retrieve the runtime values. */
-const rl_config_t* rl_get_config( void );
+const rl_config_t* rl_get_config(void);
 
 #ifdef __cplusplus
 }

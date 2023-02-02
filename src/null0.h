@@ -41,10 +41,14 @@ struct Null0State {
   u8 currentImage;
   pntr_image* images[255];
 
+  u8 currentSound;
+  rl_sound_t* sounds[255];
+
   struct timespec startTime;
   struct timespec nowTime;
 };
 typedef struct Null0State Null0State;
+
 Null0State null0_state;
 
 // all wasm3 functions return same sort of error-pattern, so this wraps that
@@ -253,6 +257,42 @@ static m3ApiRawFunction(null0_import_load_image) {
   m3ApiSuccess();
 }
 
+// Load a sound
+static m3ApiRawFunction(null0_import_load_sound) {
+  m3ApiReturnType(u8);
+  m3ApiGetArgMem(const char*, fileName);
+
+  // rl_sound_load(null0_state.sounds[null0_state.currentSound++], fileName);
+  printf("load %s\n", fileName);
+
+  m3ApiReturn(null0_state.currentSound);
+  m3ApiSuccess();
+}
+
+// Load a sound-effect
+static m3ApiRawFunction(null0_import_load_sfx) {
+  m3ApiReturnType(u8);
+  m3ApiGetArgMem(const char*, fileName);
+
+  // rl_sound_sfxr_load(null0_state.sounds[null0_state.currentSound++], fileName);
+  printf("sfx %s\n", fileName);
+
+  m3ApiReturn(null0_state.currentSound);
+  m3ApiSuccess();
+}
+
+// Play a sound
+static m3ApiRawFunction(null0_import_play_sound) {
+  m3ApiGetArg(u8, source);
+  m3ApiGetArg(float, volume);
+  m3ApiGetArg(int, repeat);
+
+  rl_sound_play(null0_state.sounds[source], volume, repeat);
+  printf("play %d %f %d\n", source, volume, repeat);
+
+  m3ApiSuccess();
+}
+
 // call cart's update(): run this in your game-loop
 void null0_update() {
   clock_gettime(CLOCK_MONOTONIC_RAW, &null0_state.nowTime);
@@ -271,6 +311,9 @@ void null0_unload() {
     if (null0_state.images[i] != NULL) {
       pntr_unload_image(null0_state.images[i]);
     }
+    if (null0_state.sounds[i] != NULL) {
+      rl_sound_destroy(null0_state.sounds[i]);
+    }
   }
 }
 // called when there is no cart
@@ -288,9 +331,11 @@ int null0_load_memory(char* filename, u8* wasmBuffer, u32 byteLength) {
 
   clock_gettime(CLOCK_MONOTONIC_RAW, &null0_state.startTime);
   null0_state.currentImage = 0;
+  null0_state.currentSound = 0;
 
   for (int i = 0; i < 255; i++) {
     null0_state.images[i] = NULL;
+    null0_state.sounds[i] = NULL;
   }
 
   null0_state.images[0] = pntr_gen_image_color(320, 240, PNTR_BLACK);
@@ -340,6 +385,9 @@ int null0_load_memory(char* filename, u8* wasmBuffer, u32 byteLength) {
   m3_LinkRawFunction(null0_state.module, "env", "null0_draw_circle", "v(iiii*)", &null0_import_draw_circle);
   m3_LinkRawFunction(null0_state.module, "env", "null0_load_image", "i(*)", &null0_import_load_image);
   m3_LinkRawFunction(null0_state.module, "env", "null0_gen_image_color", "i(ii*)", &null0_import_gen_image_color);
+  m3_LinkRawFunction(null0_state.module, "env", "null0_load_sound", "i(*)", &null0_import_load_sound);
+  m3_LinkRawFunction(null0_state.module, "env", "null0_load_sfx", "i(*)", &null0_import_load_sfx);
+  m3_LinkRawFunction(null0_state.module, "env", "null0_play_sound", "v(ifi)", &null0_import_play_sound);
   // m3_LinkRawFunction(null0_state.module, "env", "null0_file_read", "*(*)", &null0_import_file_read);
 
   // exports from wasm

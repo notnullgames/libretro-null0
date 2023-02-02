@@ -9,7 +9,8 @@
     "build:errors": "node tools/build_as.mjs errors",
     "build:files": "node tools/build_as.mjs files",
     "build:justlog": "node tools/build_as.mjs justlog",
-    "build:random": "node tools/build_as.mjs random"
+    "build:random": "node tools/build_as.mjs random",
+    "build:sound": "node tools/build_as.mjs sound"
   },
   "devDependencies": {
     "archiver": "^5.3.1",

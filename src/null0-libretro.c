@@ -45,8 +45,9 @@ void retro_run(void) {
   }
 
   null0_update();
-
   video_cb(null0_state.images[0]->data, 320, 240, 320 << 2);
+
+  const rl_config_t* config = rl_get_config();
   audio_batch_cb(rl_sound_mix(), config->samples_per_frame);
 
   bool updated = false;

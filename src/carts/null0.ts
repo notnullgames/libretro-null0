@@ -35,7 +35,6 @@ export const BLANK     :Color = { r: 0,   g:   0, b:   0, a: 0   }
 export const MAGENTA   :Color = { r: 255, g:   0, b: 255, a: 255 }
 export const RAYWHITE  :Color = { r: 245, g: 245, b: 245, a: 255 }
 
-
 // Log a string
 @external("env", "null0_log")
 declare function _log(text: ArrayBuffer): void
@@ -106,4 +105,21 @@ export function file_read_binary(fileName: string): ArrayBuffer {
   return _file_read(String.UTF8.encode(fileName, true))
 }
 
+// Load a sound
+@external("env", "null0_load_sound")
+declare function _load_sound(filename: ArrayBuffer): u8
+export function load_sound(filename: string): u8 {
+  return _load_sound(String.UTF8.encode(filename, true))
+}
+
+// Play a sound
+@external("env", "null0_play_sound")
+export declare function play_sound(sound: u8, volume:f32 = 1.0, repeat: i32 = 0 ): void
+
+// Load a sound-effect
+@external("env", "null0_load_sfx")
+declare function _null0_load_sfx(filename: ArrayBuffer): u8
+export function null0_load_sfx(filename: string): u8 {
+  return _null0_load_sfx(String.UTF8.encode(filename, true))
+}
 
