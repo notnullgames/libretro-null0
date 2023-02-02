@@ -296,6 +296,8 @@ int null0_load_memory(char* filename, u8* wasmBuffer, u32 byteLength) {
   null0_state.images[0] = pntr_gen_image_color(320, 240, PNTR_BLACK);
 
   PHYSFS_init(filename);
+  rl_sound_init();
+
   null0_state.env = m3_NewEnvironment();
   null0_state.runtime = m3_NewRuntime(null0_state.env, 1024 * 1024, NULL);
   if (t == Null0CartTypeDir || t == Null0CartTypeZip) {
