@@ -301,8 +301,9 @@ static m3ApiRawFunction(null0_import_play_sound) {
   m3ApiGetArg(float, volume);
   m3ApiGetArg(int, repeat);
 
+  // segfaults
   printf("play sound %d\n", source);
-  rl_sound_play(null0_state.sounds[source], volume, repeat);
+  // rl_sound_play(null0_state.sounds[source], volume, repeat);
 
   m3ApiSuccess();
 }
