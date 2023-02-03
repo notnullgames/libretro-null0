@@ -271,12 +271,12 @@ static m3ApiRawFunction(null0_import_load_sound) {
   m3ApiReturnType(u8);
   m3ApiGetArgMem(const char*, fileName);
 
-  rl_sound_t sound;
-  int ok = rl_sound_load(&sound, fileName);
+  rl_sound_t* sound = malloc(sizeof(rl_sound_t));
+  int ok = rl_sound_load(sound, fileName);
 
   if (ok == 0) {
     null0_state.currentSound++;
-    null0_state.sounds[null0_state.currentSound] = &sound;
+    null0_state.sounds[null0_state.currentSound] = sound;
     m3ApiReturn(null0_state.currentSound);
   }
 
@@ -303,7 +303,7 @@ static m3ApiRawFunction(null0_import_play_sound) {
 
   // segfaults
   printf("play sound %d\n", source);
-  // rl_sound_play(null0_state.sounds[source], volume, repeat);
+  rl_sound_play(null0_state.sounds[source], volume, repeat);
 
   m3ApiSuccess();
 }
