@@ -174,9 +174,11 @@ static m3ApiRawFunction(null0_import_clear_screen) {
   m3ApiGetArg(u8, destination);
   m3ApiGetArgMem(pntr_color*, color);
 
-  pntr_image* c = pntr_gen_image_color(320, 240, *color);
-  pntr_draw_image(null0_state.images[destination], c, 0, 0);
-  pntr_unload_image(c);
+  if (null0_state.images[destination] != NULL) {
+    pntr_image* c = pntr_gen_image_color(320, 240, *color);
+    pntr_draw_image(null0_state.images[destination], c, 0, 0);
+    pntr_unload_image(c);
+  }
 
   m3ApiSuccess();
 }
@@ -200,7 +202,9 @@ static m3ApiRawFunction(null0_import_draw_image) {
   m3ApiGetArg(i32, x);
   m3ApiGetArg(i32, y);
 
-  pntr_draw_image(null0_state.images[destination], null0_state.images[source], x, y);
+  if (null0_state.images[destination] != NULL) {
+    pntr_draw_image(null0_state.images[destination], null0_state.images[source], x, y);
+  }
 
   m3ApiSuccess();
 }
@@ -211,7 +215,9 @@ static m3ApiRawFunction(null0_import_draw_pixel) {
   m3ApiGetArg(int, y);
   m3ApiGetArgMem(pntr_color*, color);
 
-  pntr_draw_pixel(null0_state.images[destination], x, y, *color);
+  if (null0_state.images[destination] != NULL) {
+    pntr_draw_pixel(null0_state.images[destination], x, y, *color);
+  }
 
   m3ApiSuccess();
 }
@@ -224,8 +230,9 @@ static m3ApiRawFunction(null0_import_draw_rectangle) {
   m3ApiGetArg(int, width);
   m3ApiGetArgMem(pntr_color*, color);
 
-  pntr_draw_rectangle(null0_state.images[destination], x, y, height, width, *color);
-
+  if (null0_state.images[destination] != NULL) {
+    pntr_draw_rectangle(null0_state.images[destination], x, y, height, width, *color);
+  }
   m3ApiSuccess();
 }
 
@@ -236,7 +243,9 @@ static m3ApiRawFunction(null0_import_draw_circle) {
   m3ApiGetArg(int, radius);
   m3ApiGetArgMem(pntr_color*, color);
 
-  pntr_draw_circle(null0_state.images[destination], centerX, centerY, radius, *color);
+  if (null0_state.images[destination] != NULL) {
+    pntr_draw_circle(null0_state.images[destination], centerX, centerY, radius, *color);
+  }
 
   m3ApiSuccess();
 }
@@ -251,9 +260,9 @@ static m3ApiRawFunction(null0_import_load_image) {
   if (bytesRead) {
     null0_state.currentImage++;
     null0_state.images[null0_state.currentImage] = pntr_load_image_from_memory(fileData, bytesRead);
+    m3ApiReturn(null0_state.currentImage);
   }
-
-  m3ApiReturn(null0_state.currentImage);
+  m3ApiReturn(0);
   m3ApiSuccess();
 }
 
@@ -262,10 +271,15 @@ static m3ApiRawFunction(null0_import_load_sound) {
   m3ApiReturnType(u8);
   m3ApiGetArgMem(const char*, fileName);
 
-  // rl_sound_load(null0_state.sounds[null0_state.currentSound++], fileName);
-  printf("load %s\n", fileName);
+  rl_sound_t sound;
+  int ok = rl_sound_load(&sound, fileName);
 
-  m3ApiReturn(null0_state.currentSound);
+  if (ok == 0) {
+    null0_state.currentSound++;
+    null0_state.sounds[null0_state.currentSound] = &sound;
+    m3ApiReturn(null0_state.currentSound);
+  }
+
   m3ApiSuccess();
 }
 
@@ -287,8 +301,8 @@ static m3ApiRawFunction(null0_import_play_sound) {
   m3ApiGetArg(float, volume);
   m3ApiGetArg(int, repeat);
 
+  printf("play sound %d\n", source);
   rl_sound_play(null0_state.sounds[source], volume, repeat);
-  printf("play %d %f %d\n", source, volume, repeat);
 
   m3ApiSuccess();
 }
@@ -307,14 +321,13 @@ void null0_unload() {
   if (null0_state.cart_unload) {
     null0_check_wasm3(m3_CallV(null0_state.cart_unload));
   }
-  for (int i = 0; i < 255; i++) {
-    if (null0_state.images[i] != NULL) {
-      pntr_unload_image(null0_state.images[i]);
-    }
-    if (null0_state.sounds[i] != NULL) {
-      rl_sound_destroy(null0_state.sounds[i]);
-    }
+  for (int i = 0; i < null0_state.currentImage; i++) {
+    pntr_unload_image(null0_state.images[i]);
   }
+  // segfaults
+  // for (int i = 0; i < null0_state.currentSound; i++) {
+  //   rl_sound_destroy(null0_state.sounds[i]);
+  // }
 }
 // called when there is no cart
 int null0_load_empty() {
@@ -342,6 +355,11 @@ int null0_load_memory(char* filename, u8* wasmBuffer, u32 byteLength) {
 
   PHYSFS_init(filename);
   rl_sound_init();
+
+  // load an initial sound for 0
+  rl_sound_t* sound;
+  rl_sound_sfxr(sound, 0, 0);
+  null0_state.sounds[0] = sound;
 
   null0_state.env = m3_NewEnvironment();
   null0_state.runtime = m3_NewRuntime(null0_state.env, 1024 * 1024, NULL);
