@@ -35,6 +35,26 @@ export const BLANK     :Color = { r: 0,   g:   0, b:   0, a: 0   }
 export const MAGENTA   :Color = { r: 255, g:   0, b: 255, a: 255 }
 export const RAYWHITE  :Color = { r: 245, g: 245, b: 245, a: 255 }
 
+export enum SpeechType {
+  SAW,
+  TRIANGLE,
+  SIN,
+  SQUARE,
+  PULSE,
+  NOISE,
+  WARBLE
+}
+
+export enum SfxPreset {
+  COIN,
+  LASER,
+  EXPLOSION,
+  POWERUP,
+  HURT,
+  JUMP,
+  BLIP
+}
+
 // Log a string
 @external("env", "null0_log")
 declare function _log(text: ArrayBuffer): void
@@ -114,12 +134,26 @@ export function load_sound(filename: string): u8 {
 
 // Play a sound
 @external("env", "null0_play_sound")
-export declare function play_sound(sound: u8, volume:f32 = 1.0, repeat: i32 = 0 ): void
+export declare function play_sound(sound: u8, volume:f32 = 1.0, repeat: bool = false ): void
 
-// Load a sound-effect
+// Stop a sound
+@external("env", "null0_stop_sound")
+export declare function stop_sound(sound: u8): void
+
+// Load a preset sound-effect
 @external("env", "null0_load_sfx")
-declare function _null0_load_sfx(filename: ArrayBuffer): u8
-export function null0_load_sfx(filename: string): u8 {
-  return _null0_load_sfx(String.UTF8.encode(filename, true))
+export declare function load_sfx(type:SfxPreset, seed:u8): u8
+
+// Load a sound-effect preset file
+@external("env", "null0_load_sfx_file")
+declare function _null0_load_sfx_file(filename: ArrayBuffer): u8
+export function null0_load_sfx_file(filename: string): u8 {
+  return _null0_load_sfx_file(String.UTF8.encode(filename, true))
 }
 
+// Say some text with robo-TTS
+@external("env", "null0_say")
+declare function _null0_say(text: ArrayBuffer, volume:f32): void
+export function say(text: string, volume:f32): void {
+  return _null0_say(String.UTF8.encode(text, true), volume)
+}

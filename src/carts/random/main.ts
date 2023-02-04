@@ -4,7 +4,7 @@ export function load(): void {
 }
 
 // called per-frame to update screen
-export function update(dt: i32): void {
+export function update(dt: u64): void {
   log(Math.random().toString())
 }
 

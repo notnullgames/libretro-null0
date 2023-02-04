@@ -6,7 +6,7 @@ export function load(): void {
 }
 
 // called to update screen
-export function update(dt: f64): void {
+export function update(dt: u64): void {
 }
 
 // called when the cart is unloaded

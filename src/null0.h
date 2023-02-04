@@ -286,12 +286,18 @@ static m3ApiRawFunction(null0_import_load_sound) {
 // Load a sound-effect
 static m3ApiRawFunction(null0_import_load_sfx) {
   m3ApiReturnType(u8);
-  m3ApiGetArgMem(const char*, fileName);
+  m3ApiGetArg(int, type);
+  m3ApiGetArg(int, seed);
 
-  // rl_sound_sfxr_load(null0_state.sounds[null0_state.currentSound++], fileName);
-  printf("sfx %s\n", fileName);
+  rl_sound_t* sound = malloc(sizeof(rl_sound_t));
+  int ok = rl_sound_sfxr(sound, type, seed);
 
-  m3ApiReturn(null0_state.currentSound);
+  if (ok == 0) {
+    null0_state.currentSound++;
+    null0_state.sounds[null0_state.currentSound] = sound;
+    m3ApiReturn(null0_state.currentSound);
+  }
+
   m3ApiSuccess();
 }
 
@@ -300,10 +306,30 @@ static m3ApiRawFunction(null0_import_play_sound) {
   m3ApiGetArg(u8, source);
   m3ApiGetArg(float, volume);
   m3ApiGetArg(int, repeat);
-
-  // segfaults
-  printf("play sound %d\n", source);
   rl_sound_play(null0_state.sounds[source], volume, repeat);
+  m3ApiSuccess();
+}
+
+// Stop a sound
+static m3ApiRawFunction(null0_import_stop_sound) {
+  m3ApiGetArg(u8, source);
+  rl_sound_stop(null0_state.sounds[source]);
+  m3ApiSuccess();
+}
+
+rl_sound_t* ttssound;
+
+// set text/volume for TTS engine, and play it
+static m3ApiRawFunction(null0_import_say) {
+  m3ApiGetArgMem(const char*, text);
+  m3ApiGetArg(f32, volume);
+
+  ttssound = malloc(sizeof(rl_sound_t));
+  int ok = rl_sound_speech(ttssound, text);
+  if (ok == 0) {
+    rl_sound_play(ttssound, volume, 0);
+  }
+  free(ttssound);
 
   m3ApiSuccess();
 }
@@ -322,13 +348,12 @@ void null0_unload() {
   if (null0_state.cart_unload) {
     null0_check_wasm3(m3_CallV(null0_state.cart_unload));
   }
-  for (int i = 0; i < null0_state.currentImage; i++) {
+  for (int i = 0; i <= null0_state.currentImage; i++) {
     pntr_unload_image(null0_state.images[i]);
   }
-  // segfaults
-  // for (int i = 0; i < null0_state.currentSound; i++) {
-  //   rl_sound_destroy(null0_state.sounds[i]);
-  // }
+  for (int i = 0; i <= null0_state.currentSound; i++) {
+    free(null0_state.sounds[i]);
+  }
 }
 // called when there is no cart
 int null0_load_empty() {
@@ -347,20 +372,11 @@ int null0_load_memory(char* filename, u8* wasmBuffer, u32 byteLength) {
   null0_state.currentImage = 0;
   null0_state.currentSound = 0;
 
-  for (int i = 0; i < 255; i++) {
-    null0_state.images[i] = NULL;
-    null0_state.sounds[i] = NULL;
-  }
-
+  // 0 is screen
   null0_state.images[0] = pntr_gen_image_color(320, 240, PNTR_BLACK);
 
   PHYSFS_init(filename);
   rl_sound_init();
-
-  // load an initial sound for 0
-  rl_sound_t* sound;
-  rl_sound_sfxr(sound, 0, 0);
-  null0_state.sounds[0] = sound;
 
   null0_state.env = m3_NewEnvironment();
   null0_state.runtime = m3_NewRuntime(null0_state.env, 1024 * 1024, NULL);
@@ -405,8 +421,10 @@ int null0_load_memory(char* filename, u8* wasmBuffer, u32 byteLength) {
   m3_LinkRawFunction(null0_state.module, "env", "null0_load_image", "i(*)", &null0_import_load_image);
   m3_LinkRawFunction(null0_state.module, "env", "null0_gen_image_color", "i(ii*)", &null0_import_gen_image_color);
   m3_LinkRawFunction(null0_state.module, "env", "null0_load_sound", "i(*)", &null0_import_load_sound);
-  m3_LinkRawFunction(null0_state.module, "env", "null0_load_sfx", "i(*)", &null0_import_load_sfx);
+  m3_LinkRawFunction(null0_state.module, "env", "null0_load_sfx", "i(ii)", &null0_import_load_sfx);
   m3_LinkRawFunction(null0_state.module, "env", "null0_play_sound", "v(ifi)", &null0_import_play_sound);
+  m3_LinkRawFunction(null0_state.module, "env", "null0_stop_sound", "v(i)", &null0_import_stop_sound);
+  m3_LinkRawFunction(null0_state.module, "env", "null0_say", "v(*f)", &null0_import_say);
   // m3_LinkRawFunction(null0_state.module, "env", "null0_file_read", "*(*)", &null0_import_file_read);
 
   // exports from wasm
