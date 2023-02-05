@@ -32,7 +32,7 @@ If you want to help out, we have [a mega-issue](https://github.com/notnullgames/
 
 ## thanks
 
-I could not have made this without a great deal of help from others. I am probly forgetting people, and all these devleopers have huige bodies of great work to look at, so go checkout their Githubs.
+I could not have made this without a great deal of help from others. I am probly forgetting people, and all these developers have huge bodies of great open-source work to look at, so go checkout their Githubs.
 
 - [@RobLoach](https://github.com/RobLoach)'s rad [pntr](https://github.com/robloach/pntr) makes the graphics and [raylib-physfs](https://github.com/RobLoach/raylib-physfs) gave me a lot of ideas with the filesystem, and the many other projects they work on around games & code education are just so wonderful & useful.
 - [physfs](https://icculus.org/physfs/) - this provides the fs-sandbox (locked into specific dir or cart zip file) in native runtime, and it works really well.
