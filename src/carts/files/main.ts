@@ -1,7 +1,8 @@
 // called when the cart is loaded
 export function load(): void {
   log('Hello, from files load().')
-  log("Text: " + file_read('test.txt'))
+  // log("Text: " + file_read('test.txt'))
+  log("test.txt: " + file_read('test.txt'))
 }
 
 // called per-frame to update screen

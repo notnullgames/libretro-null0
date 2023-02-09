@@ -1,7 +1,8 @@
 {
-  "name": "carts",
+  "name": "null0",
   "private": true,
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "build:host": "cmake -B build . && make -C build",
     
@@ -16,6 +17,5 @@
     "archiver": "^5.3.1",
     "assemblyscript": "^0.26.2",
     "shelljs": "^0.8.5"
-  },
-  "type": "module"
+  }
 }

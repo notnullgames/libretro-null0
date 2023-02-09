@@ -117,43 +117,30 @@ export declare function gen_image_color(width:u8, height: u8, color:Color): u8
 
 // Read a file
 @external("env", "null0_file_read")
-declare function _file_read(fileName: ArrayBuffer): ArrayBuffer
-export function file_read(fileName: string): string {
-  return String.UTF8.decode(_file_read(String.UTF8.encode(fileName, true)))
+declare function _file_read(filename: ArrayBuffer): ArrayBuffer
+export function file_read(filename: string): string {
+  return String.UTF8.decode(_file_read(String.UTF8.encode(filename, true)))
 }
-export function file_read_binary(fileName: string): ArrayBuffer {
-  return _file_read(String.UTF8.encode(fileName, true))
+export function file_read_binary(filename: string): ArrayBuffer {
+  return _file_read(String.UTF8.encode(filename, true))
 }
 
-// Load a sound
-@external("env", "null0_load_sound")
-declare function _load_sound(filename: ArrayBuffer): u8
-export function load_sound(filename: string): u8 {
-  return _load_sound(String.UTF8.encode(filename, true))
+// Create a TTS speaker
+@external("env", "null0_create_speech")
+declare function _create_speech(text: ArrayBuffer): u8
+export function create_speech(text: string): u8 {
+  return _create_speech(String.UTF8.encode(text, true))
+}
+
+// Set the text of a TTS speaker
+@external("env", "null0_speech_settext")
+declare function _speech_text(id: u8, text: ArrayBuffer): void
+export function speech_text(id:u8, text: string): void {
+  _speech_text(id, String.UTF8.encode(text, true))
 }
 
 // Play a sound
-@external("env", "null0_play_sound")
-export declare function play_sound(sound: u8, volume:f32 = 1.0, repeat: bool = false ): void
+@external("env", "null0_sound_play")
+export declare function sound_play(id: u8): void
 
-// Stop a sound
-@external("env", "null0_stop_sound")
-export declare function stop_sound(sound: u8): void
 
-// Load a preset sound-effect
-@external("env", "null0_load_sfx")
-export declare function load_sfx(type:SfxPreset, seed:u8): u8
-
-// Load a sound-effect preset file
-@external("env", "null0_load_sfx_file")
-declare function _null0_load_sfx_file(filename: ArrayBuffer): u8
-export function null0_load_sfx_file(filename: string): u8 {
-  return _null0_load_sfx_file(String.UTF8.encode(filename, true))
-}
-
-// Say some text with robo-TTS
-@external("env", "null0_say")
-declare function _null0_say(text: ArrayBuffer, volume:f32): void
-export function say(text: string, volume:f32): void {
-  return _null0_say(String.UTF8.encode(text, true), volume)
-}
