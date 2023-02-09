@@ -137,7 +137,7 @@ bool retro_load_game(const struct retro_game_info* info) {
 
   check_variables();
 
-  // TODO: put this all together in function
+  // TODO: put this all together in null0_wasm_init function
 
   PHYSFS_init(info->path);
 
@@ -150,13 +150,14 @@ bool retro_load_game(const struct retro_game_info* info) {
     unsigned int* s;
     cart.bytes = null0_fs_file_read("main.wasm", s);
     cart.size = *s;
-  } else if (!null0_fs_is_wasm((u8*)info->data)) {
-    return false;
-  } else {
+  } else if (null0_fs_is_wasm((u8*)info->data)) {
     cart.filename = (char*)info->path;
     cart.bytes = (u8*)info->data;
     cart.size = info->size;
+  } else {
+    return false;
   }
+
   return null0_wasm_init(cart);
 }
 

@@ -22,6 +22,7 @@ static void null0_check_wasm3_is_ok() {
 
 // allocate WASM memory & copy value in
 // TODO: not currently working, I think _mem is wrong
+// TODO: support other export name-conventions like emscripten
 u32 wmcopy(void* pointer, size_t size) {
   M3Memory* _mem = &null0.runtime->memory;
 
@@ -45,6 +46,7 @@ u32 wmcopy(void* pointer, size_t size) {
 }
 
 // free WASM memory
+// TODO: support other export name-conventions like emscripten
 void wfree(u32 pointer) {
   if (!null0._unpin) {
     fprintf(stderr, "__unpin does not exist.\n");
@@ -200,6 +202,25 @@ static m3ApiRawFunction(null0_import_file_read) {
   m3ApiSuccess();
 }
 
+// IMPORT write a file
+static m3ApiRawFunction(null0_import_file_write) {
+  m3ApiGetArgMem(const char*, filename);
+  m3ApiGetArgMem(const char*, content);
+  m3ApiGetArg(u32, size);
+
+  unsigned int bytesWritten = null0_fs_file_write(filename, content, size);
+
+  m3ApiSuccess();
+}
+
+// IMPORT check if file exists
+static m3ApiRawFunction(null0_import_file_exists) {
+  m3ApiReturnType(int);
+  m3ApiGetArgMem(const char*, filename);
+  m3ApiReturn(null0_fs_exists(filename) ? 1 : 0);
+  m3ApiSuccess();
+}
+
 // IMPORT create a speech-player
 static m3ApiRawFunction(null0_import_sound_create_speech) {
   m3ApiReturnType(u8);
@@ -291,6 +312,8 @@ bool null0_wasm_init(Null0CartData cart) {
   m3_LinkRawFunction(null0.module, "env", "null0_load_image", "i(*)", &null0_import_load_image);
 
   m3_LinkRawFunction(null0.module, "env", "null0_file_read", "i(*)", &null0_import_file_read);
+  m3_LinkRawFunction(null0.module, "env", "null0_file_write", "v(**i)", &null0_import_file_write);
+  m3_LinkRawFunction(null0.module, "env", "null0_file_exists", "i(*)", &null0_import_file_exists);
 
   m3_LinkRawFunction(null0.module, "env", "null0_create_speech", "i(*)", &null0_import_sound_create_speech);
   m3_LinkRawFunction(null0.module, "env", "null0_speech_settext", "v(i*)", &null0_import_sound_speech_settext);

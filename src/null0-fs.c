@@ -87,6 +87,14 @@ unsigned char* null0_fs_file_read(const char* filename, unsigned int* bytesRead)
   return buffer;
 }
 
+// write a file to physfs
+unsigned int null0_fs_file_write(const char* filename, const char* contents, unsigned int size) {
+  void* handle = PHYSFS_openWrite(filename);
+  unsigned int written = PHYSFS_writeBytes(handle, contents, size);
+  PHYSFS_close(handle);
+  return written;
+}
+
 // use first 4 bytes of file to detect zip
 bool null0_fs_is_zip(u8* bytes) {
   return bytes[0] == 80 && bytes[1] == 75 && bytes[2] == 3 && bytes[3] == 4;

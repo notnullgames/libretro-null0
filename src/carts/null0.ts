@@ -125,6 +125,23 @@ export function file_read_binary(filename: string): ArrayBuffer {
   return _file_read(String.UTF8.encode(filename, true))
 }
 
+// write a file
+@external("env", "null0_file_write")
+declare function _file_write(filename: ArrayBuffer, content: ArrayBuffer, length: u32): void
+export function file_write(filename: string, content: string): void {
+  return _file_write(String.UTF8.encode(filename, true), String.UTF8.encode(content, true), content.length)
+}
+export function file_write_binary(filename: string, content: ArrayBuffer): void {
+  return _file_write(String.UTF8.encode(filename, true), content, content.byteLength)
+}
+
+// Read a file
+@external("env", "null0_file_exists")
+declare function _file_exists(filename: ArrayBuffer): i32
+export function file_exists(filename: string): boolean {
+  return _file_exists(String.UTF8.encode(filename, true)) === 1
+}
+
 // Create a TTS speaker
 @external("env", "null0_create_speech")
 declare function _create_speech(text: ArrayBuffer): u8
@@ -142,5 +159,4 @@ export function speech_text(id:u8, text: string): void {
 // Play a sound
 @external("env", "null0_sound_play")
 export declare function sound_play(id: u8): void
-
 

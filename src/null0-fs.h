@@ -21,4 +21,7 @@ bool null0_fs_init_wasm();
 // read a file from physfs
 unsigned char* null0_fs_file_read(const char* filename, unsigned int* bytesRead);
 
+// write a file to physfs
+unsigned int null0_fs_file_write(const char* filename, const char* contents, unsigned int size);
+
 #endif  // NULL0_FS_H
