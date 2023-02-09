@@ -232,6 +232,59 @@ static m3ApiRawFunction(null0_import_sound_create_speech) {
   m3ApiSuccess();
 }
 
+// IMPORT create a mod-player
+static m3ApiRawFunction(null0_import_sound_create_mod) {
+  m3ApiReturnType(u8);
+  m3ApiGetArgMem(const char*, filename);
+
+  unsigned int bytesRead = 0;
+  unsigned char* fileData = null0_fs_file_read(filename, &bytesRead);
+
+  if (bytesRead) {
+    null0.currentSound++;
+    null0.sounds[null0.currentSound] = Openmpt_create();
+    int res = Openmpt_loadMem(null0.sounds[null0.currentSound], fileData, bytesRead);
+    if (res != 0) {
+      printf("%s: %d - %s\n", filename, bytesRead, Soloud_getErrorString(null0.soloud, res));
+    }
+    m3ApiReturn(null0.currentSound);
+  }
+
+  m3ApiSuccess();
+}
+
+// IMPORT create a wav-player
+static m3ApiRawFunction(null0_import_sound_create_wav) {
+  m3ApiReturnType(u8);
+  m3ApiGetArgMem(const char*, filename);
+
+  unsigned int bytesRead = 0;
+  unsigned char* fileData = null0_fs_file_read(filename, &bytesRead);
+
+  if (bytesRead) {
+    null0.currentSound++;
+    null0.sounds[null0.currentSound] = Wav_create();
+    int res = Wav_loadMem(null0.sounds[null0.currentSound], fileData, bytesRead);
+    if (res != 0) {
+      printf("%s: %d - %s\n", filename, bytesRead, Soloud_getErrorString(null0.soloud, res));
+    }
+    m3ApiReturn(null0.currentSound);
+  }
+
+  m3ApiSuccess();
+}
+
+// IMPORT create a wav-player
+static m3ApiRawFunction(null0_import_sound_loop) {
+  m3ApiGetArg(u8, destination);
+  m3ApiGetArg(int, looping);
+
+  // TODO: this is not working
+  // Wav_setLooping(null0.sounds[destination], 100);
+
+  m3ApiSuccess();
+}
+
 // IMPORT set text of speech-player
 static m3ApiRawFunction(null0_import_sound_speech_settext) {
   m3ApiGetArg(u8, destination);
@@ -290,13 +343,23 @@ bool null0_wasm_init(Null0CartData cart) {
 
   null0.images[0] = pntr_gen_image_color(320, 240, PNTR_BLACK);
 
+#ifdef NULL0_NULL_SOUND
   Soloud_initEx(
       null0.soloud,
       SOLOUD_CLIP_ROUNDOFF,
       SOLOUD_NULLDRIVER,
-      48000,
+      NULL0_SAMPLE_RATE,
       SOLOUD_AUTO,
       2);
+#else
+  Soloud_initEx(
+      null0.soloud,
+      SOLOUD_CLIP_ROUNDOFF,
+      SOLOUD_AUTO,
+      NULL0_SAMPLE_RATE,
+      SOLOUD_AUTO,
+      2);
+#endif
 
   // IMPORTS (to wasm)
   m3_LinkRawFunction(null0.module, "env", "null0_log", "v(*)", &null0_import_log);
@@ -317,7 +380,10 @@ bool null0_wasm_init(Null0CartData cart) {
 
   m3_LinkRawFunction(null0.module, "env", "null0_create_speech", "i(*)", &null0_import_sound_create_speech);
   m3_LinkRawFunction(null0.module, "env", "null0_speech_settext", "v(i*)", &null0_import_sound_speech_settext);
+  m3_LinkRawFunction(null0.module, "env", "null0_create_mod", "i(*)", &null0_import_sound_create_mod);
+  m3_LinkRawFunction(null0.module, "env", "null0_create_wav", "i(*)", &null0_import_sound_create_wav);
   m3_LinkRawFunction(null0.module, "env", "null0_sound_play", "v(i)", &null0_import_sound_play);
+  m3_LinkRawFunction(null0.module, "env", "null0_sound_loop", "v(ii)", &null0_import_sound_loop);
 
   null0_check_wasm3_is_ok();
 

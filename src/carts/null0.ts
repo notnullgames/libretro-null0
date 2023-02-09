@@ -142,12 +142,34 @@ export function file_exists(filename: string): boolean {
   return _file_exists(String.UTF8.encode(filename, true)) === 1
 }
 
+@external("env", "null0_sound_loop")
+declare function _sound_loop(sound:u8, looing:i32): void
+export function sound_loop(sound: u8, looping: boolean): void {
+  return _sound_loop(sound, looping ? 1 : 0)
+}
+
 // Create a TTS speaker
 @external("env", "null0_create_speech")
 declare function _create_speech(text: ArrayBuffer): u8
 export function create_speech(text: string): u8 {
   return _create_speech(String.UTF8.encode(text, true))
 }
+
+
+// Create a mod/xm/midi/etc player
+@external("env", "null0_create_mod")
+declare function _create_mod(filename: ArrayBuffer): u8
+export function create_mod(filename: string): u8 {
+  return _create_mod(String.UTF8.encode(filename, true))
+}
+
+// Create a wav player
+@external("env", "null0_create_wav")
+declare function _create_wav(filename: ArrayBuffer): u8
+export function create_wav(filename: string): u8 {
+  return _create_wav(String.UTF8.encode(filename, true))
+}
+
 
 // Set the text of a TTS speaker
 @external("env", "null0_speech_settext")

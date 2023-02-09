@@ -60,4 +60,5 @@ endif()
 
 ADD_LIBRARY(${PROJECT_NAME}-libretro SHARED ${SOURCES} src/entry-libretro.c ${soloud_SOURCE_DIR}/src/c_api/soloud_c.cpp)
 SET_TARGET_PROPERTIES(${PROJECT_NAME}-libretro PROPERTIES PREFIX "")
+target_compile_definitions(${PROJECT_NAME}-libretro PUBLIC NULL0_NULL_SOUND)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}-libretro PRIVATE m3 physfs-static pntr soloud)
