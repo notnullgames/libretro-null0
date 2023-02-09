@@ -233,6 +233,7 @@ static m3ApiRawFunction(null0_import_sound_create_speech) {
 }
 
 // IMPORT create a mod-player
+// TODO: not working on libretro, maybe due to dlopen stuff. Try to static link openmpt and make a custom soloud AudioSource
 static m3ApiRawFunction(null0_import_sound_create_mod) {
   m3ApiReturnType(u8);
   m3ApiGetArgMem(const char*, filename);

@@ -42,10 +42,15 @@ FetchContent_MakeAvailable(soloud)
 add_subdirectory(${soloud_SOURCE_DIR}/contrib)
 include_directories(${soloud_SOURCE_DIR}/include)
 
+# TODO: figure out how to statically link to this
+# FETCHCONTENT_DECLARE(openmpt GIT_REPOSITORY https://github.com/OpenMPT/openmpt.git)
+# FetchContent_MakeAvailable(openmpt)
+
 file(GLOB
   SOURCES
   CONFIGURE_DEPENDS
   ${CMAKE_SOURCE_DIR}/src/null0-*.[cpp|c]
+  ${openmpt_SOURCE_DIR}/libopenmpt/*.cpp
 )
 
 # SDL for CLI
