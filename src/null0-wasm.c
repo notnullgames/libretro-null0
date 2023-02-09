@@ -274,17 +274,6 @@ static m3ApiRawFunction(null0_import_sound_create_wav) {
   m3ApiSuccess();
 }
 
-// IMPORT create a wav-player
-static m3ApiRawFunction(null0_import_sound_loop) {
-  m3ApiGetArg(u8, destination);
-  m3ApiGetArg(int, looping);
-
-  // TODO: this is not working
-  // Wav_setLooping(null0.sounds[destination], 100);
-
-  m3ApiSuccess();
-}
-
 // IMPORT set text of speech-player
 static m3ApiRawFunction(null0_import_sound_speech_settext) {
   m3ApiGetArg(u8, destination);
@@ -296,7 +285,11 @@ static m3ApiRawFunction(null0_import_sound_speech_settext) {
 // IMPORT play a sound source
 static m3ApiRawFunction(null0_import_sound_play) {
   m3ApiGetArg(u8, destination);
-  Soloud_play(null0.soloud, null0.sounds[destination]);
+  m3ApiGetArg(int, looping);
+  int voice = Soloud_play(null0.soloud, null0.sounds[destination]);
+  if (looping != 0) {
+    Soloud_setLooping(null0.soloud, voice, true);
+  }
   m3ApiSuccess();
 }
 
@@ -382,8 +375,7 @@ bool null0_wasm_init(Null0CartData cart) {
   m3_LinkRawFunction(null0.module, "env", "null0_speech_settext", "v(i*)", &null0_import_sound_speech_settext);
   m3_LinkRawFunction(null0.module, "env", "null0_create_mod", "i(*)", &null0_import_sound_create_mod);
   m3_LinkRawFunction(null0.module, "env", "null0_create_wav", "i(*)", &null0_import_sound_create_wav);
-  m3_LinkRawFunction(null0.module, "env", "null0_sound_play", "v(i)", &null0_import_sound_play);
-  m3_LinkRawFunction(null0.module, "env", "null0_sound_loop", "v(ii)", &null0_import_sound_loop);
+  m3_LinkRawFunction(null0.module, "env", "null0_sound_play", "v(ii)", &null0_import_sound_play);
 
   null0_check_wasm3_is_ok();
 

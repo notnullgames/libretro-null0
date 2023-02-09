@@ -142,12 +142,6 @@ export function file_exists(filename: string): boolean {
   return _file_exists(String.UTF8.encode(filename, true)) === 1
 }
 
-@external("env", "null0_sound_loop")
-declare function _sound_loop(sound:u8, looing:i32): void
-export function sound_loop(sound: u8, looping: boolean): void {
-  return _sound_loop(sound, looping ? 1 : 0)
-}
-
 // Create a TTS speaker
 @external("env", "null0_create_speech")
 declare function _create_speech(text: ArrayBuffer): u8
@@ -180,5 +174,5 @@ export function speech_text(id:u8, text: string): void {
 
 // Play a sound
 @external("env", "null0_sound_play")
-export declare function sound_play(id: u8): void
+export declare function sound_play(id: u8, loop: boolean): void
 

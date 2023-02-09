@@ -10,10 +10,9 @@ export function load(): void {
   tts = create_speech("Hello from null zero.")
   mod = create_mod("dune_-_zzzbla.xm")
   wav = create_wav("amen.wav")
-  sound_play(tts)
-  sound_play(mod)
-  sound_play(wav)
-  sound_loop(wav, true)
+  sound_play(tts, false)
+  sound_play(mod, false)
+  sound_play(wav, true)
 }
 
 // called to update screen
