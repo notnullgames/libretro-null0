@@ -3,7 +3,7 @@ import fs from 'fs'
 import shell from 'shelljs'
 import asc from 'assemblyscript/asc'
 
-const { test, cp, mkdir, exec } = shell
+const { test, cp, mkdir } = shell
 
 const [, , target] = process.argv
 if (!target) {
@@ -40,12 +40,12 @@ const camelCaseToTitleCase = (s) =>
 // compile wat/wasm
 const options = [
   '--use', 'abort=fatal',
-  '--lib', 'src/carts/null0.ts',
+  '--lib', 'carts/null0.ts',
   '--runtime', 'stub',
   '--exportRuntime',
   '--optimize',
   '--stats',
-  `src/carts/${target}/main.ts`,
+  `carts/${target}/main.ts`,
   '-o', `build/${target}.wasm`,
   '-t', `build/${target}.wat`,
   '--bindings', 'esm'
@@ -72,8 +72,8 @@ if (error) {
 mkdir('-p', `build/${target}`)
 cp(`build/${target}.wasm`, `build/${target}/main.wasm`)
 
-if (test('-d', `src/carts/${target}/assets`)) {
-  cp('-R', `src/carts/${target}/assets/*`, `build/${target}/`)
+if (test('-d', `carts/${target}/assets`)) {
+  cp('-R', `carts/${target}/assets/*`, `build/${target}/`)
 }
 
 await zip(`build/${target}`, `build/${target}.null0`)

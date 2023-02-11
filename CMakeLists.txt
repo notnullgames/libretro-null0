@@ -46,24 +46,16 @@ include_directories(${soloud_SOURCE_DIR}/include)
 # FETCHCONTENT_DECLARE(openmpt GIT_REPOSITORY https://github.com/OpenMPT/openmpt.git)
 # FetchContent_MakeAvailable(openmpt)
 
-file(GLOB
-  SOURCES
-  CONFIGURE_DEPENDS
-  ${CMAKE_SOURCE_DIR}/src/null0-*.[cpp|c]
-  ${openmpt_SOURCE_DIR}/libopenmpt/*.cpp
-)
-
 # SDL for CLI
 find_package(SDL2 REQUIRED)
 if (SDL2_FOUND)
-    add_executable(${PROJECT_NAME} ${SOURCES} src/entry-cli.c ${soloud_SOURCE_DIR}/src/c_api/soloud_c.cpp)
+    add_executable(${PROJECT_NAME} src/entry-cli.c ${soloud_SOURCE_DIR}/src/c_api/soloud_c.cpp)
     target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2 SDL2::SDL2main m3 physfs-static pntr soloud)
 else()
     message(WARNING "SDL not found, so no CLI")
 endif()
 
-
-ADD_LIBRARY(${PROJECT_NAME}-libretro SHARED ${SOURCES} src/entry-libretro.c ${soloud_SOURCE_DIR}/src/c_api/soloud_c.cpp)
+ADD_LIBRARY(${PROJECT_NAME}-libretro SHARED src/entry-libretro.c ${soloud_SOURCE_DIR}/src/c_api/soloud_c.cpp)
 SET_TARGET_PROPERTIES(${PROJECT_NAME}-libretro PROPERTIES PREFIX "")
 target_compile_definitions(${PROJECT_NAME}-libretro PUBLIC NULL0_NULL_SOUND)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}-libretro PRIVATE m3 physfs-static pntr soloud)
